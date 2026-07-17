@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+*** GENERATED FROM project.xml - DO NOT EDIT  ***
+***         EDIT ../build.xml INSTEAD         ***
+-->
+<project name="resort_management-impl" default="default" basedir="..">
+    <target name="-init">
+        <property file="nbproject/project.properties"/>
+        <property name="src.dir" value="src"/>
+        <property name="build.dir" value="build"/>
+        <property name="build.classes.dir" value="${build.dir}/classes"/>
+        <property name="dist.dir" value="dist"/>
+        <property name="dist.jar" value="${dist.dir}/resort_management.jar"/>
+        <property name="main.class" value="resort.management.Main"/>
+        <property name="javac.source" value="1.8"/>
+        <property name="javac.target" value="1.8"/>
+    </target>
+
+    <target name="compile" depends="-init" description="Compile the source files">
+        <mkdir dir="${build.classes.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" includeantruntime="false" debug="true" source="${javac.source}" target="${javac.target}"/>
+    </target>
+
+    <target name="jar" depends="compile" description="Package into jar">
+        <mkdir dir="${dist.dir}"/>
+        <jar destfile="${dist.jar}" basedir="${build.classes.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${main.class}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="jar" description="Run the application">
+        <java jar="${dist.jar}" fork="true"/>
+    </target>
+
+    <target name="clean" depends="-init" description="Clean build files">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+
+    <target name="default" depends="run"/>
+</project>
