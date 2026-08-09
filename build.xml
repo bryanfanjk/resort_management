@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- You may freely edit this file. See commented blocks below for -->
 <!-- some examples of how to customize the build. -->
-<!-- Compiler options and classpath are documented in state of the art -->
-<!-- nbproject/project.properties file. -->
-<project name="resort_management" default="default" basedir=".">
-    <description>Builds, tests, and runs the project resort_management.</description>
+<!-- We recommend that you do not edit the imports. -->
+<project name="TARUMT_Resorts" default="default" basedir=".">
+    <description>Builds, tests, and runs the project TARUMT_Resorts.</description>
     <import file="nbproject/build-impl.xml"/>
 </project>
