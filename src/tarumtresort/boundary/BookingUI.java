@@ -66,13 +66,16 @@ public class BookingUI {
         Room.RoomType requestedType = Room.RoomType.values()[typeChoice - 1];
         
         String date = InputUtil.readDate("Enter Booking Date (YYYY-MM-DD): ");
+        int nights = InputUtil.readInt("Enter Number of Nights (1-30): ", 1, 30);
 
         // Create standard guest (Standard Tier)
         Guest guest = new Guest(name, contact);
         
         Booking booking = controller.registerStandardBooking(guest, requestedType, date);
+        booking.setNights(nights);
         System.out.println("\nSUCCESS: Booking Registered!");
         System.out.printf("Confirmation Number: %s\n", booking.getConfirmationNumber());
+        System.out.printf("Stay Duration: %d night(s)\n", booking.getNights());
         System.out.printf("Position in queue: %d\n", queue.size());
         InputUtil.pressEnterToContinue();
     }

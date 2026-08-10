@@ -77,6 +77,7 @@ public class VIPAllocationUI {
         Room.RoomType requestedRoomType = Room.RoomType.values()[roomChoice - 1];
 
         String date = InputUtil.readDate("Enter Booking Date (YYYY-MM-DD): ");
+        int nights = InputUtil.readInt("Enter Number of Nights (1-30): ", 1, 30);
 
         // Create guest with points that match their tier minimum
         int startingPoints = 0;
@@ -90,8 +91,10 @@ public class VIPAllocationUI {
         Guest guest = new Guest(name, contact, startingPoints, tier);
 
         Booking booking = controller.registerVIPBooking(guest, requestedRoomType, date);
+        booking.setNights(nights);
         System.out.println("\nSUCCESS: VIP Booking Registered!");
         System.out.printf("Confirmation Number: %s\n", booking.getConfirmationNumber());
+        System.out.printf("Stay Duration: %d night(s)\n", booking.getNights());
         System.out.printf("Current Priority Queue Size: %d\n", queue.getSize());
         InputUtil.pressEnterToContinue();
     }

@@ -35,6 +35,7 @@ public class Booking implements Comparable<Booking> {
     private boolean isVIP;
     private long bookingIndex; // Chronological sequence index
     private String bookingDate; // e.g. "2026-07-04"
+    private int nights = 1; // Duration of stay in nights
 
     public Booking(String confirmationNumber, Guest guest, Room.RoomType requestedRoomType, boolean isVIP, long bookingIndex, String bookingDate) {
         this.confirmationNumber = confirmationNumber;
@@ -114,6 +115,14 @@ public class Booking implements Comparable<Booking> {
 
     public void setBookingDate(String bookingDate) {
         this.bookingDate = bookingDate;
+    }
+
+    public int getNights() {
+        return nights;
+    }
+
+    public void setNights(int nights) {
+        this.nights = nights;
     }
 
     @Override

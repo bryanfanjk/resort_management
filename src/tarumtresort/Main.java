@@ -50,7 +50,7 @@ public class Main {
         BookingController bookingController = new BookingController(standardBookingQueue, bookingLookupTree, roomList);
         VIPAllocationController vipController = new VIPAllocationController(vipBookingQueue, bookingLookupTree, roomList);
         HousekeepingController housekeepingController = new HousekeepingController(housekeepingHistoryStack, roomList);
-        FrontDeskController frontDeskController = new FrontDeskController(bookingLookupTree);
+        FrontDeskController frontDeskController = new FrontDeskController(bookingLookupTree, roomList);
         LoyaltyController loyaltyController = new LoyaltyController(guestList, guestLookupTree);
         ReportController reportController = new ReportController(roomList, guestList, bookingLookupTree, housekeepingHistoryStack);
 
@@ -132,8 +132,11 @@ public class Main {
 
         // --- Seed Standard Bookings (Chronological Queue) ---
         Booking sb1 = new Booking("50284711", g2, Room.RoomType.STANDARD, false, 1, "2026-07-04");
+        sb1.setNights(3);
         Booking sb2 = new Booking("50284712", g3, Room.RoomType.DELUXE, false, 2, "2026-07-04");
+        sb2.setNights(2);
         Booking sb3 = new Booking("50284713", g5, Room.RoomType.SUITE, false, 3, "2026-07-04");
+        sb3.setNights(1);
 
         standardBookingQueue.enqueue(sb1);
         standardBookingQueue.enqueue(sb2);
@@ -146,8 +149,11 @@ public class Main {
         // --- Seed VIP Bookings (Heap Priority Queue) ---
         // Tier Order: David (ELITE, rank 5) > Alice (DIAMOND, rank 4) > Frank (PLATINUM, rank 3)
         Booking vb1 = new Booking("VIP00001", g1, Room.RoomType.SUITE, true, 10, "2026-07-04");
+        vb1.setNights(4);
         Booking vb2 = new Booking("VIP00002", g4, Room.RoomType.PENTHOUSE, true, 11, "2026-07-04");
+        vb2.setNights(5);
         Booking vb3 = new Booking("VIP00003", g6, Room.RoomType.DELUXE, true, 12, "2026-07-04");
+        vb3.setNights(2);
 
         vipBookingQueue.enqueue(vb1);
         vipBookingQueue.enqueue(vb2);
@@ -160,6 +166,7 @@ public class Main {
         // --- Seed Allocated/Active Bookings ---
         Room r301 = roomList.getEntry(11); // Suite 301
         Booking activeBooking = new Booking("22947581", g4, Room.RoomType.SUITE, true, 5, "2026-07-03");
+        activeBooking.setNights(3);
         r301.setCurrentGuestConfirmation(activeBooking.getConfirmationNumber());
         activeBooking.setAllocatedRoom(r301);
         activeBooking.setStatus(Booking.BookingStatus.CHECKED_IN);
