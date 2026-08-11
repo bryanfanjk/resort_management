@@ -43,6 +43,17 @@ public class Queue<T> {
 
         return data;
     }
+    
+    public T get(int index) {
+
+        if (index < 0 || index >= size) {
+            return null;
+        }
+
+        int position = (front + index) % queue.length;
+
+        return queue[position];
+    }
 
     public T peek() {
         if (isEmpty()) {
@@ -50,6 +61,38 @@ public class Queue<T> {
         }
 
         return queue[front];
+    }
+    
+    public T remove(int index) {
+
+        if (index < 0 || index >= size) {
+            return null;
+        }
+
+        int position = (front + index) % queue.length;
+        T removed = queue[position];
+
+        for (int i = index; i < size - 1; i++) {
+
+            int current = (front + i) % queue.length;
+            int next = (front + i + 1) % queue.length;
+
+            queue[current] = queue[next];
+        }
+
+        int lastPosition = (front + size - 1) % queue.length;
+        queue[lastPosition] = null;
+
+        size--;
+
+        if (size == 0) {
+            front = 0;
+            rear = -1;
+        } else {
+            rear = (front + size - 1) % queue.length;
+        }
+
+        return removed;
     }
 
     public boolean isEmpty() {

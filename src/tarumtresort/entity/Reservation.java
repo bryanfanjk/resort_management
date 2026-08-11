@@ -20,10 +20,15 @@ public class Reservation {
     public Room getRoom() {
         return room;
     }
-
+    
+    public void setRoom(Room room) {
+    this.room = room;
+    }
+    
     @Override
     public String toString() {
         return customer.getCustomerName() +
                " -> Room " + room.getRoomNumber();
     }
+
 }
