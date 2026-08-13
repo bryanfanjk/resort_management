@@ -9,6 +9,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import tarumtresort.adt.List;
+import tarumtresort.control.FrontDeskControl;
+import tarumtresort.boundary.FrontDeskUI;
+import tarumtresort.entity.GuestBillingInfo;
 
 public class Main {
 
@@ -18,6 +21,10 @@ public class Main {
     static List<Reservation> reservations = new List<>(100);
 
     static Room[] rooms = generateRooms();
+
+    static FrontDeskControl frontDeskControl = new FrontDeskControl();
+    static FrontDeskUI frontDeskUI = new FrontDeskUI(frontDeskControl);
+    static int confirmationCounter = 80000001;
 
     public static void main(String[] args) {
 
@@ -29,7 +36,8 @@ public class Main {
             System.out.println("1. Check In");
             System.out.println("2. Release Room");
             System.out.println("3. View Reports");
-            System.out.println("4. Exit");
+            System.out.println("4. Front-Desk Service (Guest Search & Billing)");
+            System.out.println("5. Exit");
             System.out.print("Enter your choice: ");
 
             choice = scanner.nextInt();
@@ -50,6 +58,10 @@ public class Main {
                     break;
 
                 case 4:
+                    frontDeskUI.displayFrontDeskMenu(rooms);
+                    break;
+
+                case 5:
                     System.out.println("\nSystem closed.");
                     break;
 
@@ -57,7 +69,7 @@ public class Main {
                     System.out.println("\nInvalid choice.");
             }
 
-        } while (choice != 4);
+        } while (choice != 5);
     }
     
     public static Room[] generateRooms(){
@@ -191,30 +203,44 @@ public class Main {
                 nightsStayed
         );
 
+        String confirmationNumber = String.valueOf(confirmationCounter++);
         Room availableRoom = findAvailableRoom(pax);
+        double dailyRate = 150.0;
 
         if (availableRoom != null) {
 
             availableRoom.setAvailable(false);
 
             Reservation reservation =
-                    new Reservation(customer, availableRoom);
+                    new Reservation(customer, availableRoom, confirmationNumber);
             reservations.add(reservation);
+
+            GuestBillingInfo guestInfo = new GuestBillingInfo(
+                    confirmationNumber, customer, availableRoom, dailyRate
+            );
+            frontDeskControl.registerGuestInfo(guestInfo);
 
             System.out.println("\nCheck-in successful.");
             System.out.println("Customer: " + name);
+            System.out.println("Confirmation Number: " + confirmationNumber);
             System.out.println("Room Number: "
                     + availableRoom.getRoomNumber());
 
         } else {
 
             Reservation reservation =
-                    new Reservation(customer, null);
+                    new Reservation(customer, null, confirmationNumber);
 
             waitingQueue.enqueue(reservation);
 
+            GuestBillingInfo guestInfo = new GuestBillingInfo(
+                    confirmationNumber, customer, null, dailyRate
+            );
+            frontDeskControl.registerGuestInfo(guestInfo);
+
             System.out.println("\nNo suitable room is currently available.");
             System.out.println("Customer has been added to the waiting queue.");
+            System.out.println("Confirmation Number: " + confirmationNumber);
             System.out.println("Queue Position: "
                     + waitingQueue.size());
         }
@@ -351,6 +377,17 @@ public class Main {
                 reservation.setRoom(suitableRoom);
                 suitableRoom.setAvailable(false);
                 reservations.add(reservation);
+
+                // Update GuestBillingInfo in FrontDeskControl Non-Linear BST
+                if (reservation.getConfirmationNumber() != null && !reservation.getConfirmationNumber().isEmpty()) {
+                    GuestBillingInfo updatedInfo = new GuestBillingInfo(
+                            reservation.getConfirmationNumber(),
+                            reservation.getCustomer(),
+                            suitableRoom,
+                            150.0
+                    );
+                    frontDeskControl.registerGuestInfo(updatedInfo);
+                }
 
                 System.out.println("\nRoom assigned.");
                 System.out.println("Customer: "

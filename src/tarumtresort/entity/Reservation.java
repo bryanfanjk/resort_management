@@ -7,10 +7,18 @@ package tarumtresort.entity;
 public class Reservation {
     private Customer customer;
     private Room room;
+    private String confirmationNumber;
 
     public Reservation(Customer customer, Room room) {
         this.customer = customer;
         this.room = room;
+        this.confirmationNumber = "";
+    }
+
+    public Reservation(Customer customer, Room room, String confirmationNumber) {
+        this.customer = customer;
+        this.room = room;
+        this.confirmationNumber = confirmationNumber;
     }
 
     public Customer getCustomer() {
@@ -22,13 +30,21 @@ public class Reservation {
     }
     
     public void setRoom(Room room) {
-    this.room = room;
+        this.room = room;
+    }
+
+    public String getConfirmationNumber() {
+        return confirmationNumber;
+    }
+
+    public void setConfirmationNumber(String confirmationNumber) {
+        this.confirmationNumber = confirmationNumber;
     }
     
     @Override
     public String toString() {
-        return customer.getCustomerName() +
-               " -> Room " + room.getRoomNumber();
+        return "Ref: " + confirmationNumber + " | " + customer.getCustomerName() +
+               " -> Room " + (room != null ? room.getRoomNumber() : "Waiting");
     }
 
 }
