@@ -1,6 +1,9 @@
 package control;
 
+import adt.EmptyCollectionException;
 import adt.List;
+import adt.MaxHeapPriorityQueue;
+import adt.PriorityQueue;
 import adt.Queue;
 import dao.RoomData;
 import entity.Customer;
@@ -12,13 +15,16 @@ import entity.RoomType;
 /** The check-in, checkout processes, and waiting-list assignment. */
 public class HotelController {
 
+    private final PriorityQueue<Customer> vipQueue;
+
+    public HotelController() {
+        this(RoomData.createRooms());
+        this.vipQueue = new MaxHeapPriorityQueue<>();
+    }
     private final Room[] rooms;
     private final Queue<Reservation> waitingQueue = new Queue<>(100);
     private final List<Reservation> reservations = new List<>(100);
 
-    public HotelController() {
-        this(RoomData.createRooms());
-    }
 
     public HotelController(Room[] rooms) {
         this.rooms = rooms;
@@ -40,6 +46,10 @@ public class HotelController {
             reservations.add(reservation);
         }
         return reservation;
+    }
+    
+    public Customer serveNextGuest() throws EmptyCollectionException {
+        return vipQueue.removeHighestPriority();
     }
 
     /** Marks an occupied room Available*/

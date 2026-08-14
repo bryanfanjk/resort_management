@@ -4,6 +4,7 @@ import java.util.Scanner;
 import adt.List;
 import control.HotelController;
 import entity.Customer;
+import entity.LoyaltyTier;
 import entity.Reservation;
 import entity.Room;
 import entity.RoomType;
@@ -51,9 +52,11 @@ public class HotelCheckInUI {
         String checkOutDate = readDate("Check-out Date (DD/MM/YYYY): ");
         int nightsStayed = readPositiveInteger("Nights Stayed: ");
         RoomType roomType = readRoomType();
+        LoyaltyTier tier = readTierChoice();
+        int loyaltyPoints = readLoyaltyPoints();
 
         Reservation reservation = controller.checkIn(new Customer(name, pax,
-                checkInDate, checkOutDate, nightsStayed), roomType);
+                checkInDate, checkOutDate, nightsStayed, tier, loyaltyPoints), roomType);
         if (reservation.getRoom() == null) {
             System.out.println("\nNo matching " + roomType.getDisplayName()
                     + " room is currently available.");
@@ -120,7 +123,37 @@ public class HotelCheckInUI {
         System.out.println("Room Number: " + reservation.getRoom().getRoomNumber());
         System.out.println("Room Type: " + reservation.getRoom().getRoomType().getDisplayName());
     }
+    
+    private int readLoyaltyPoints(){
+        System.out.print("Loyalty Points: ");
+        int points = 0;
+        try { 
+            points = Integer.parseInt(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid points value. Registration cancelled.");
+        }
+        return points;
+    }
 
+    private LoyaltyTier readTierChoice() {
+        LoyaltyTier[] tiers = LoyaltyTier.values();
+        System.out.println("Select Tier:");
+        for (int i = 0; i < tiers.length; i++) {
+            System.out.println((i + 1) + ". " + tiers[i].getLabel());
+        }
+        System.out.print("Choice: ");
+        try {
+            int choice = Integer.parseInt(scanner.nextLine().trim());
+            if (choice >= 1 && choice <= tiers.length) {
+                return tiers[choice - 1];
+            }
+        } catch (NumberFormatException ignored) {
+            // falls through to default below
+        }
+        System.out.println("Invalid choice, defaulting to STANDARD.");
+        return LoyaltyTier.STANDARD;
+    }
+    
     private String readCustomerName() {
         while (true) {
             System.out.print("Customer Name: ");
