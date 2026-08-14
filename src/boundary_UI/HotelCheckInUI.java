@@ -1,13 +1,13 @@
-package tarumtresort.boundary;
+package boundary_UI;
 
 import java.util.Scanner;
-import tarumtresort.adt.List;
-import tarumtresort.control.HotelController;
-import tarumtresort.entity.Customer;
-import tarumtresort.entity.Reservation;
-import tarumtresort.entity.Room;
-import tarumtresort.entity.RoomType;
-import tarumtresort.util.DateValidator;
+import adt.List;
+import control.HotelController;
+import entity.Customer;
+import entity.Reservation;
+import entity.Room;
+import entity.RoomType;
+import utility.DateValidator;
 
 /** Staff console interface. */
 public class HotelCheckInUI {

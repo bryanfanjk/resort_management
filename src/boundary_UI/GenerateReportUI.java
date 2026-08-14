@@ -1,9 +1,9 @@
-package tarumtresort.boundary;
+package boundary_UI;
 
-import tarumtresort.adt.List;
-import tarumtresort.adt.Queue;
-import tarumtresort.control.HotelController;
-import tarumtresort.entity.Reservation;
+import adt.List;
+import adt.Queue;
+import control.HotelController;
+import entity.Reservation;
 
 /** Displays reports */
 public class GenerateReportUI {

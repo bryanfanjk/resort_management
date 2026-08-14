@@ -1,6 +1,6 @@
 package resort.management;
 
-import tarumtresort.boundary.HotelCheckInUI;
+import boundary_UI.HotelCheckInUI;
 
 public class Main {
 

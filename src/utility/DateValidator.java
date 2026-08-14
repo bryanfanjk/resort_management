@@ -1,4 +1,4 @@
-package tarumtresort.util;
+package utility;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

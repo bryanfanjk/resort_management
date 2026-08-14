@@ -1,13 +1,13 @@
-package tarumtresort.control;
+package control;
 
-import tarumtresort.adt.List;
-import tarumtresort.adt.Queue;
-import tarumtresort.dao.RoomData;
-import tarumtresort.entity.Customer;
-import tarumtresort.entity.Reservation;
-import tarumtresort.entity.Room;
-import tarumtresort.entity.RoomStatus;
-import tarumtresort.entity.RoomType;
+import adt.List;
+import adt.Queue;
+import dao.RoomData;
+import entity.Customer;
+import entity.Reservation;
+import entity.Room;
+import entity.RoomStatus;
+import entity.RoomType;
 
 /** The check-in, checkout processes, and waiting-list assignment. */
 public class HotelController {
