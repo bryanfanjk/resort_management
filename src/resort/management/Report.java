@@ -18,17 +18,18 @@ public class Report {
         }
 
         System.out.printf(
-                "%-20s %-8s %-15s %-15s %-12s %-10s%n",
+                "%-20s %-8s %-15s %-15s %-12s %-12s %-10s%n",
                 "Customer Name",
                 "Pax",
                 "Check-in",
                 "Check-out",
                 "Nights",
+                "Room Type",
                 "Room"
         );
 
         System.out.println(
-                "--------------------------------------------------------------------------"
+                "---------------------------------------------------------------------------------------"
         );
 
         for (int i = 0; i < reservations.size(); i++) {
@@ -36,22 +37,28 @@ public class Report {
             Reservation reservation = reservations.get(i);
 
             String roomNumber;
+            String roomType;
 
             if (reservation.getRoom() == null) {
                 roomNumber = "Waiting";
+                roomType = reservation.getRequestedRoomType() == null
+                        ? "-"
+                        : reservation.getRequestedRoomType().getDisplayName();
             } else {
                 roomNumber = String.valueOf(
                         reservation.getRoom().getRoomNumber()
                 );
+                roomType = reservation.getRoom().getRoomType().getDisplayName();
             }
 
             System.out.printf(
-                    "%-20s %-8d %-15s %-15s %-12d %-10s%n",
+                    "%-20s %-8d %-15s %-15s %-12d %-12s %-10s%n",
                     reservation.getCustomer().getCustomerName(),
                     reservation.getCustomer().getPax(),
                     reservation.getCustomer().getCheckInDate(),
                     reservation.getCustomer().getCheckOutDate(),
                     reservation.getCustomer().getNightsStayed(),
+                    roomType,
                     roomNumber
             );
         }
@@ -69,17 +76,18 @@ public class Report {
         }
 
         System.out.printf(
-                "%-10s %-20s %-8s %-15s %-15s %-12s%n",
+                "%-10s %-20s %-8s %-15s %-15s %-12s %-12s%n",
                 "Position",
                 "Customer Name",
                 "Pax",
                 "Check-in",
                 "Check-out",
-                "Nights"
+                "Nights",
+                "Room Type"
         );
 
         System.out.println(
-                "----------------------------------------------------------------------------"
+                "------------------------------------------------------------------------------------------"
         );
 
         for (int i = 0; i < waitingQueue.size(); i++) {
@@ -87,13 +95,16 @@ public class Report {
             Reservation reservation = waitingQueue.get(i);
 
             System.out.printf(
-                    "%-10d %-20s %-8d %-15s %-15s %-12d%n",
+                    "%-10d %-20s %-8d %-15s %-15s %-12d %-12s%n",
                     i + 1,
                     reservation.getCustomer().getCustomerName(),
                     reservation.getCustomer().getPax(),
                     reservation.getCustomer().getCheckInDate(),
                     reservation.getCustomer().getCheckOutDate(),
-                    reservation.getCustomer().getNightsStayed()
+                    reservation.getCustomer().getNightsStayed(),
+                    reservation.getRequestedRoomType() == null
+                            ? "-"
+                            : reservation.getRequestedRoomType().getDisplayName()
             );
         }
     }

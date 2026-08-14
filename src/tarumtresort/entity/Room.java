@@ -7,11 +7,20 @@ package tarumtresort.entity;
 public class Room {
     private int roomNumber;
     private int capacity;
+    private RoomType roomType;
     private boolean available;
 
+    /**
+     * Retained for existing callers. New rooms should specify their type.
+     */
     public Room(int roomNumber, int capacity) {
+        this(roomNumber, capacity, RoomType.DELUXE);
+    }
+
+    public Room(int roomNumber, int capacity, RoomType roomType) {
         this.roomNumber = roomNumber;
         this.capacity = capacity;
+        this.roomType = roomType;
         this.available = true;
     }
 
@@ -21,6 +30,10 @@ public class Room {
 
     public int getCapacity() {
         return capacity;
+    }
+
+    public RoomType getRoomType() {
+        return roomType;
     }
 
     public boolean isAvailable() {
@@ -34,6 +47,7 @@ public class Room {
     @Override
     public String toString() {
         return "Room " + roomNumber +
+               " | Type: " + roomType.getDisplayName() +
                " | Capacity: " + capacity +
                " | Available: " + available;
     }

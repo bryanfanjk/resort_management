@@ -7,10 +7,17 @@ package tarumtresort.entity;
 public class Reservation {
     private Customer customer;
     private Room room;
+    private RoomType requestedRoomType;
 
     public Reservation(Customer customer, Room room) {
+        this(customer, room, room == null ? null : room.getRoomType());
+    }
+
+    public Reservation(Customer customer, Room room,
+                       RoomType requestedRoomType) {
         this.customer = customer;
         this.room = room;
+        this.requestedRoomType = requestedRoomType;
     }
 
     public Customer getCustomer() {
@@ -23,6 +30,10 @@ public class Reservation {
     
     public void setRoom(Room room) {
     this.room = room;
+    }
+
+    public RoomType getRequestedRoomType() {
+        return requestedRoomType;
     }
     
     @Override

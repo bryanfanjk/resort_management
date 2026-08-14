@@ -5,6 +5,7 @@ import tarumtresort.adt.Queue;
 import tarumtresort.entity.Customer;
 import tarumtresort.entity.Reservation;
 import tarumtresort.entity.Room;
+import tarumtresort.entity.RoomType;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -63,12 +64,12 @@ public class Main {
     public static Room[] generateRooms(){
         
             Room[] rooms = new Room[6];
-            rooms[0] = new Room(101, 1);
-            rooms[1] = new Room(102, 1);
-            rooms[2] = new Room(201, 2);
-            rooms[3] = new Room(202, 2);
-            rooms[4] = new Room(301, 3);
-            rooms[5] = new Room(302, 3);
+            rooms[0] = new Room(101, 1, RoomType.DELUXE);
+            rooms[1] = new Room(102, 1, RoomType.DELUXE);
+            rooms[2] = new Room(201, 2, RoomType.PREMIUM);
+            rooms[3] = new Room(202, 2, RoomType.PREMIUM);
+            rooms[4] = new Room(301, 3, RoomType.PLATINUM);
+            rooms[5] = new Room(302, 3, RoomType.PLATINUM);
             
             return rooms;
     };
@@ -183,6 +184,8 @@ public class Main {
             }
         }
 
+        RoomType requestedRoomType = readRoomType();
+
         Customer customer = new Customer(
                 name,
                 pax,
@@ -191,25 +194,27 @@ public class Main {
                 nightsStayed
         );
 
-        Room availableRoom = findAvailableRoom(pax);
+        Room availableRoom = findAvailableRoom(pax, requestedRoomType);
 
         if (availableRoom != null) {
 
             availableRoom.setAvailable(false);
 
             Reservation reservation =
-                    new Reservation(customer, availableRoom);
+                    new Reservation(customer, availableRoom, requestedRoomType);
             reservations.add(reservation);
 
             System.out.println("\nCheck-in successful.");
             System.out.println("Customer: " + name);
             System.out.println("Room Number: "
                     + availableRoom.getRoomNumber());
+            System.out.println("Room Type: "
+                    + availableRoom.getRoomType().getDisplayName());
 
         } else {
 
             Reservation reservation =
-                    new Reservation(customer, null);
+                    new Reservation(customer, null, requestedRoomType);
 
             waitingQueue.enqueue(reservation);
 
@@ -297,18 +302,32 @@ public class Main {
         assignRoomToWaitingCustomer();
     }
 
-    public static Room findAvailableRoom(int pax) {
+    public static Room findAvailableRoom(int pax, RoomType roomType) {
 
         for (Room room : rooms) {
 
             if (room != null
                     && room.isAvailable()
+                    && room.getRoomType() == roomType
                     && room.getCapacity() >= pax) {
 
                 return room;
             }
         }
 
+        return null;
+    }
+
+    /**
+     * Retained for callers that do not need type filtering.
+     */
+    public static Room findAvailableRoom(int pax) {
+        for (Room room : rooms) {
+            if (room != null && room.isAvailable()
+                    && room.getCapacity() >= pax) {
+                return room;
+            }
+        }
         return null;
     }
 
@@ -340,7 +359,8 @@ public class Main {
             int requiredPax =
                     reservation.getCustomer().getPax();
 
-            Room suitableRoom = findAvailableRoom(requiredPax);
+            Room suitableRoom = findAvailableRoom(
+                    requiredPax, reservation.getRequestedRoomType());
 
             if (suitableRoom != null) {
 
@@ -358,6 +378,8 @@ public class Main {
 
                 System.out.println("Room Number: "
                         + suitableRoom.getRoomNumber());
+                System.out.println("Room Type: "
+                        + suitableRoom.getRoomType().getDisplayName());
 
                 assigned = true;
 
@@ -367,6 +389,29 @@ public class Main {
 
         if (!assigned) {
             System.out.println("No suitable rooms are available.");
+        }
+    }
+
+    public static RoomType readRoomType() {
+        while (true) {
+            System.out.println("Desired Room Type:");
+            System.out.println("1. Deluxe");
+            System.out.println("2. Premium");
+            System.out.println("3. Platinum");
+            System.out.print("Enter your choice: ");
+
+            String input = scanner.nextLine().trim();
+
+            switch (input) {
+                case "1":
+                    return RoomType.DELUXE;
+                case "2":
+                    return RoomType.PREMIUM;
+                case "3":
+                    return RoomType.PLATINUM;
+                default:
+                    System.out.println("Please choose 1, 2, or 3.");
+            }
         }
     }
     
