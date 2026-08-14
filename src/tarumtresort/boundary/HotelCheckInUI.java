@@ -48,12 +48,11 @@ public class HotelCheckInUI {
         String name = readCustomerName();
         int pax = readPositiveInteger("Number of Pax: ");
         String checkInDate = readDate("Check-in Date (DD/MM/YYYY): ");
-        String checkOutDate = readDate("Check-out Date (DD/MM/YYYY): ");
         int nightsStayed = readPositiveInteger("Nights Stayed: ");
         RoomType roomType = readRoomType();
 
         Reservation reservation = controller.checkIn(new Customer(name, pax,
-                checkInDate, checkOutDate, nightsStayed), roomType);
+                checkInDate, nightsStayed), roomType);
         if (reservation.getRoom() == null) {
             System.out.println("\nNo matching " + roomType.getDisplayName()
                     + " room is currently available.");
@@ -70,7 +69,8 @@ public class HotelCheckInUI {
         System.out.println("\nCheck Out");
         System.out.println("=================================");
         int roomNumber = readPositiveInteger("Enter Room Number: ");
-        if (controller.checkOut(roomNumber)) {
+        String checkOutDate = readDate("Check-out Date (DD/MM/YYYY): ");
+        if (controller.checkOut(roomNumber, checkOutDate)) {
             System.out.println("\nRoom " + roomNumber + " is now Available.");
         } else {
             System.out.println("Room does not exist or is already Available.");
@@ -104,13 +104,15 @@ public class HotelCheckInUI {
 
     private void viewReports() {
         System.out.println("\nView Reports");
-        System.out.println("1. Reservation Report");
+        System.out.println("1. Active Reservations Report");
         System.out.println("2. Waiting List Report");
-        System.out.println("3. Back");
+        System.out.println("3. Checkout History Report");
+        System.out.println("4. Back");
         System.out.print("Enter your choice: ");
         switch (readInteger()) {
             case 1: reportUI.displayReservationReport(); break;
             case 2: reportUI.displayWaitingReport(); break;
+            case 3: reportUI.displayHistoryReport(); break;
             default: break;
         }
     }

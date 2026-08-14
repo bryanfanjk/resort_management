@@ -15,9 +15,12 @@ public class HotelController {
     private final Room[] rooms;
     private final Queue<Reservation> waitingQueue = new Queue<>(100);
     private final List<Reservation> reservations = new List<>(100);
+    private final List<Reservation> completedReservations = new List<>(100);
 
     public HotelController() {
         this(RoomData.createRooms());
+        generateInitialCustomers();
+        generateWaitingCustomers();
     }
 
     public HotelController(Room[] rooms) {
@@ -43,13 +46,15 @@ public class HotelController {
     }
 
     /** Marks an occupied room Available*/
-    public boolean checkOut(int roomNumber) {
+    public boolean checkOut(int roomNumber, String checkOutDate) {
         Room room = findRoom(roomNumber);
         if (room == null || room.getStatus() != RoomStatus.OCCUPIED) {
             return false;
         }
 
-        removeReservationForRoom(roomNumber);
+        Reservation reservation = removeReservationForRoom(roomNumber);
+        reservation.getCustomer().setCheckOutDate(checkOutDate);
+        completedReservations.add(reservation);
         room.setStatus(RoomStatus.AVAILABLE);
         return true;
     }
@@ -105,6 +110,10 @@ public class HotelController {
         return waitingQueue;
     }
 
+    public List<Reservation> getCompletedReservations() {
+        return completedReservations;
+    }
+
     private Room findRoom(int roomNumber) {
         for (Room room : rooms) {
             if (room != null && room.getRoomNumber() == roomNumber) {
@@ -114,14 +123,15 @@ public class HotelController {
         return null;
     }
 
-    private void removeReservationForRoom(int roomNumber) {
+    private Reservation removeReservationForRoom(int roomNumber) {
         for (int i = 0; i < reservations.size(); i++) {
             Reservation reservation = reservations.get(i);
             if (reservation.getRoom().getRoomNumber() == roomNumber) {
                 reservations.remove(i);
-                return;
+                return reservation;
             }
         }
+        return null;
     }
 
     private boolean containsCustomer(List<Reservation> source, String name) {
@@ -142,5 +152,25 @@ public class HotelController {
             }
         }
         return false;
+    }
+
+    /** Populate data for checked in customers */
+    private void generateInitialCustomers() {
+        checkIn(new Customer("Aina Rahman", 1, "14/08/2026", 2),
+                RoomType.DELUXE);
+        checkIn(new Customer("Brandon Lee", 2, "14/08/2026", 3),
+                RoomType.PREMIUM);
+        checkIn(new Customer("Chong Mei Ling", 3, "14/08/2026", 4),
+                RoomType.PLATINUM);
+    }
+
+    /** Populate data for waiting customers */
+    private void generateWaitingCustomers() {
+        waitingQueue.enqueue(new Reservation(
+                new Customer("Daniel Kumar", 2, "14/08/2026", 2),
+                null, RoomType.DELUXE));
+        waitingQueue.enqueue(new Reservation(
+                new Customer("Evelyn Tan", 3, "14/08/2026", 3),
+                null, RoomType.PREMIUM));
     }
 }

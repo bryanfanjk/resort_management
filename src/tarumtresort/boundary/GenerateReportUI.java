@@ -16,7 +16,7 @@ public class GenerateReportUI {
 
     public void displayReservationReport() {
         List<Reservation> reservations = controller.getReservations();
-        System.out.println("\nReservation Report");
+        System.out.println("\nActive Reservation Report");
         System.out.println("=================================");
 
         if (reservations.isEmpty()) {
@@ -35,7 +35,8 @@ public class GenerateReportUI {
                     reservation.getCustomer().getCustomerName(),
                     reservation.getCustomer().getPax(),
                     reservation.getCustomer().getCheckInDate(),
-                    reservation.getCustomer().getCheckOutDate(),
+                    reservation.getCustomer().getCheckOutDate() == null
+                            ? "-" : reservation.getCustomer().getCheckOutDate(),
                     reservation.getCustomer().getNightsStayed(),
                     reservation.getRoom().getRoomType().getDisplayName(),
                     reservation.getRoom().getRoomNumber());
@@ -63,9 +64,40 @@ public class GenerateReportUI {
                     i + 1, reservation.getCustomer().getCustomerName(),
                     reservation.getCustomer().getPax(),
                     reservation.getCustomer().getCheckInDate(),
-                    reservation.getCustomer().getCheckOutDate(),
+                    reservation.getCustomer().getCheckOutDate() == null
+                            ? "-" : reservation.getCustomer().getCheckOutDate(),
                     reservation.getCustomer().getNightsStayed(),
                     reservation.getRequestedRoomType().getDisplayName());
+        }
+    }
+
+    /** Displays only reservations that have completed checkout. */
+    public void displayHistoryReport() {
+        List<Reservation> completedReservations =
+                controller.getCompletedReservations();
+        System.out.println("\nCheckout History Report");
+        System.out.println("=================================");
+
+        if (completedReservations.isEmpty()) {
+            System.out.println("No checked-out customers found.");
+            return;
+        }
+
+        System.out.printf("%-20s %-8s %-15s %-15s %-12s %-12s %-10s%n",
+                "Customer Name", "Pax", "Check-in", "Check-out", "Nights",
+                "Room Type", "Room");
+        System.out.println("---------------------------------------------------------------------------------------");
+
+        for (int i = 0; i < completedReservations.size(); i++) {
+            Reservation reservation = completedReservations.get(i);
+            System.out.printf("%-20s %-8d %-15s %-15s %-12d %-12s %-10d%n",
+                    reservation.getCustomer().getCustomerName(),
+                    reservation.getCustomer().getPax(),
+                    reservation.getCustomer().getCheckInDate(),
+                    reservation.getCustomer().getCheckOutDate(),
+                    reservation.getCustomer().getNightsStayed(),
+                    reservation.getRoom().getRoomType().getDisplayName(),
+                    reservation.getRoom().getRoomNumber());
         }
     }
 }

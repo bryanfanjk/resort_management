@@ -22,6 +22,11 @@ public class Customer {
         this.nightsStayed = nightsStayed;
     }
 
+    public Customer(String customerName, int pax, String checkInDate,
+                    int nightsStayed) {
+        this(customerName, pax, checkInDate, null, nightsStayed);
+    }
+
     public String getCustomerName() {
         return customerName;
     }
@@ -36,6 +41,10 @@ public class Customer {
 
     public String getCheckOutDate() {
         return checkOutDate;
+    }
+
+    public void setCheckOutDate(String checkOutDate) {
+        this.checkOutDate = checkOutDate;
     }
 
     public int getNightsStayed() {
