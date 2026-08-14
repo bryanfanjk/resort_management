@@ -20,7 +20,6 @@ public class HotelController {
     public HotelController() {
         this(RoomData.createRooms());
         generateInitialCustomers();
-        generateWaitingCustomers();
     }
 
     public HotelController(Room[] rooms) {
@@ -156,21 +155,19 @@ public class HotelController {
 
     /** Populate data for checked in customers */
     private void generateInitialCustomers() {
-        checkIn(new Customer("Aina Rahman", 1, "14/08/2026", 2),
+        checkIn(new Customer("Yung Onn", 3, "14/08/2026", 2),
+                RoomType.PLATINUM);
+        checkIn(new Customer("Jia Ming", 1, "14/08/2026", 1),
+                RoomType.PREMIUM);
+        checkIn(new Customer("Chun Yi", 2, "14/08/2026", 4),
+                RoomType.DELUXE);
+        checkIn(new Customer("Ali", 1, "14/08/2026", 2),
                 RoomType.DELUXE);
         checkIn(new Customer("Brandon Lee", 2, "14/08/2026", 3),
                 RoomType.PREMIUM);
-        checkIn(new Customer("Chong Mei Ling", 3, "14/08/2026", 4),
+        checkIn(new Customer("Mei Ling", 3, "14/08/2026", 4),
                 RoomType.PLATINUM);
+        
     }
 
-    /** Populate data for waiting customers */
-    private void generateWaitingCustomers() {
-        waitingQueue.enqueue(new Reservation(
-                new Customer("Daniel Kumar", 2, "14/08/2026", 2),
-                null, RoomType.DELUXE));
-        waitingQueue.enqueue(new Reservation(
-                new Customer("Evelyn Tan", 3, "14/08/2026", 3),
-                null, RoomType.PREMIUM));
-    }
 }
