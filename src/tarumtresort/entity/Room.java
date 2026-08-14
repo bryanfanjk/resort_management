@@ -8,11 +8,9 @@ public class Room {
     private int roomNumber;
     private int capacity;
     private RoomType roomType;
-    private boolean available;
+    private RoomStatus status;
 
-    /**
-     * Retained for existing callers. New rooms should specify their type.
-     */
+    
     public Room(int roomNumber, int capacity) {
         this(roomNumber, capacity, RoomType.DELUXE);
     }
@@ -21,7 +19,7 @@ public class Room {
         this.roomNumber = roomNumber;
         this.capacity = capacity;
         this.roomType = roomType;
-        this.available = true;
+        this.status = RoomStatus.AVAILABLE;
     }
 
     public int getRoomNumber() {
@@ -37,11 +35,19 @@ public class Room {
     }
 
     public boolean isAvailable() {
-        return available;
+        return status == RoomStatus.AVAILABLE;
     }
 
     public void setAvailable(boolean available) {
-        this.available = available;
+        this.status = available ? RoomStatus.AVAILABLE : RoomStatus.OCCUPIED;
+    }
+
+    public RoomStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(RoomStatus status) {
+        this.status = status;
     }
 
     @Override
@@ -49,6 +55,6 @@ public class Room {
         return "Room " + roomNumber +
                " | Type: " + roomType.getDisplayName() +
                " | Capacity: " + capacity +
-               " | Available: " + available;
+               " | Status: " + status.getDisplayName();
     }
 }
