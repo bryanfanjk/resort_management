@@ -4,7 +4,7 @@
  */
 package tarumtresort.adt;
 
-public class List<T> {
+public class List<T> implements ListInterface<T> {
 
     private T[] data;
     private int size;
@@ -15,6 +15,7 @@ public class List<T> {
         size = 0;
     }
 
+    @Override
     public void add(T item) {
 
         if (size == data.length) {
@@ -26,6 +27,7 @@ public class List<T> {
         size++;
     }
 
+    @Override
     public T get(int index) {
 
         if (index < 0 || index >= size) {
@@ -35,6 +37,7 @@ public class List<T> {
         return data[index];
     }
 
+    @Override
     public T remove(int index) {
 
         if (index < 0 || index >= size) {
@@ -53,6 +56,7 @@ public class List<T> {
         return removed;
     }
 
+    @Override
     public boolean contains(T item) {
 
         for (int i = 0; i < size; i++) {
@@ -65,10 +69,12 @@ public class List<T> {
         return false;
     }
 
+    @Override
     public int size() {
         return size;
     }
 
+    @Override
     public boolean isEmpty() {
         return size == 0;
     }
