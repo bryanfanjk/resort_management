@@ -17,7 +17,7 @@ public class HotelController {
 
     private final Room[] rooms;
     private final List<WaitingCustomer> waitingCustomers = new List<>(100);
-    private final List<Reservation> reservations = new List<>(100);
+    private final List<Reservation> activeReservations = new List<>(100);
     private final List<Reservation> completedReservations = new List<>(100);
 
     public HotelController() {
@@ -32,7 +32,7 @@ public class HotelController {
     }
 
     public boolean customerExists(String name) {
-        return containsReservationCustomer(reservations, name)
+        return containsReservationCustomer(activeReservations, name)
                 || containsWaitingCustomer(name);
     }
 
@@ -78,7 +78,7 @@ public class HotelController {
             room.setStatus(RoomStatus.OCCUPIED);
             Reservation reservation = new Reservation(waitingCustomer, room,
                     waitingCustomer.getRequestedRoomType());
-            reservations.add(reservation);
+            activeReservations.add(reservation);
             return new AssignmentResult(skippedCustomers, reservation);
         }
         return new AssignmentResult(skippedCustomers, null);
@@ -109,8 +109,8 @@ public class HotelController {
      */
     public List<Reservation> getAllReservationsSorted() {
         List<Reservation> allReservations = new List<>(
-                reservations.size() + completedReservations.size());
-        addAll(allReservations, reservations);
+                activeReservations.size() + completedReservations.size());
+        addAll(allReservations, activeReservations);
         addAll(allReservations, completedReservations);
 
         List<Reservation> sortedReservations = new List<>(allReservations.size());
@@ -145,10 +145,10 @@ public class HotelController {
     }
 
     private Reservation removeReservationForRoom(int roomNumber) {
-        for (int i = 0; i < reservations.size(); i++) {
-            Reservation reservation = reservations.get(i);
+        for (int i = 0; i < activeReservations.size(); i++) {
+            Reservation reservation = activeReservations.get(i);
             if (reservation.getRoom().getRoomNumber() == roomNumber) {
-                reservations.remove(i);
+                activeReservations.remove(i);
                 return reservation;
             }
         }
@@ -278,7 +278,7 @@ public class HotelController {
         Room room = findAvailableRoom(customer.getPax(), roomType);
         if (room != null) {
             room.setStatus(RoomStatus.OCCUPIED);
-            reservations.add(new Reservation(customer, room, roomType));
+            activeReservations.add(new Reservation(customer, room, roomType));
         }
     }
 }

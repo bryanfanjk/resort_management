@@ -56,7 +56,6 @@ public class HotelCheckInUI {
                 checkInDate, nightsStayed), roomType);
         System.out.println("\nWalk-in reservation added to the waiting list.");
         System.out.println("Waiting Position: " + controller.getWaitingCount());
-        System.out.println("Use 'Check In Customer' when staff are ready to allocate a room.");
     }
 
     private void checkOut() {
