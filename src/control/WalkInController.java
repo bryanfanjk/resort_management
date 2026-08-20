@@ -1,14 +1,15 @@
+
 package control;
 
-import adt.QueueInterface;
 import adt.StandardQueue;
-import boundary.WalkInUI;
+import boundary_UI.WalkInUI;
 import dao.RoomData;
 import dao.SeedCustomerData;
 import entity.Customer;
 import entity.CustomerType;
 import entity.Room;
 import entity.RoomType;
+import adt.ListInterface;
 
 /**
  * Author: <Your Name Here>
@@ -32,7 +33,7 @@ import entity.RoomType;
  */
 public class WalkInController {
 
-    private final QueueInterface<Customer> standardQueue;
+    private final ListInterface<Customer> standardQueue;
     private final VipAllocationController vipController;
     private final Room[] rooms;
 
@@ -98,6 +99,10 @@ public class WalkInController {
      * actually dequeued once a matching room has been confirmed
      * available. Dequeuing first would lose the customer from the
      * queue entirely if no matching room existed.
+     *
+     * This version keeps the same flow as the project spec, but exposes the
+     * queue state cleanly so the boundary can show the actual waiting status
+     * after every action.
      */
     public RoomAssignmentResult assignRoom() {
         Customer target;
@@ -115,13 +120,9 @@ public class WalkInController {
 
         Room matchedRoom = findAvailableRoom(target.getRequestedRoomType());
         if (matchedRoom == null) {
-            // Deliberate simplification: the front customer blocks the
-            // rest of their queue for their room type - no skip-ahead
-            // to a later customer who might be servable right now.
             return RoomAssignmentResult.noRoomAvailable(target);
         }
 
-        // Only now do we actually remove the customer from their queue.
         if (fromVipQueue) {
             vipController.getNextVip();
         } else {
@@ -130,6 +131,27 @@ public class WalkInController {
         matchedRoom.setAvailable(false);
 
         return RoomAssignmentResult.success(target, matchedRoom);
+    }
+
+    public int getStandardQueueSize() {
+        return standardQueue.size();
+    }
+
+    public int getVipQueueSize() {
+        return vipController.waitingVipCount();
+    }
+
+    public Customer peekNextStandardCustomer() {
+        return standardQueue.peekFront();
+    }
+
+    public Customer peekNextVipCustomer() {
+        return vipController.peekNextVip();
+    }
+
+    public String getQueueStatusSummary() {
+        return "VIP waiting: " + getVipQueueSize()
+                + " | Standard waiting: " + getStandardQueueSize();
     }
 
     private Room findAvailableRoom(RoomType requestedType) {

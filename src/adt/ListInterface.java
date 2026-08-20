@@ -10,7 +10,7 @@ package adt;
  *
  * @param <T> the element type stored
  */
-public interface QueueInterface<T> {
+public interface ListInterface<T> {
 
     /** Adds an item to the back of the queue. */
     boolean enqueue(T item);

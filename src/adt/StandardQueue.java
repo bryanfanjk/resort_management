@@ -15,7 +15,7 @@ package adt;
  * No java.util collection classes are used - array + manual doubling,
  * same growth strategy as ECBDemo's ArrayList.
  */
-public class StandardQueue<T> implements QueueInterface<T> {
+public class StandardQueue<T> implements ListInterface<T> {
 
     private static final int DEFAULT_CAPACITY = 10;
 

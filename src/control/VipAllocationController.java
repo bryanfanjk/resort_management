@@ -1,9 +1,9 @@
 package control;
 
-import adt.QueueInterface;
 import adt.VipQueue;
 import dao.VipCodeData;
 import entity.Customer;
+import adt.ListInterface;
 
 /**
  * Author: <Your Name Here>
@@ -17,7 +17,7 @@ import entity.Customer;
  */
 public class VipAllocationController {
 
-    private final QueueInterface<Customer> vipQueue;
+    private final ListInterface<Customer> vipQueue;
     private final String[] validVipCodes;
 
     public VipAllocationController() {

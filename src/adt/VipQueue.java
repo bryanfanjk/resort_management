@@ -17,7 +17,7 @@ package adt;
  * (front index + count), O(1) enqueue/dequeue/peek, manual doubling
  * on growth, no java.util collection classes.
  */
-public class VipQueue<T> implements QueueInterface<T> {
+public class VipQueue<T> implements ListInterface<T> {
 
     private static final int DEFAULT_CAPACITY = 10;
 
