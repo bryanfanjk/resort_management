@@ -1,9 +1,11 @@
 package boundary;
 
+import control.CheckInResult;
 import control.RoomAssignmentResult;
 import control.WalkInController;
 import entity.Customer;
 import entity.Room;
+import entity.RoomType;
 
 import java.util.Scanner;
 
@@ -13,7 +15,8 @@ import java.util.Scanner;
  * WalkInUI is the boundary class - matches the menu skeleton you
  * pasted exactly. Per ECB rules, this class does ONLY I/O: it reads
  * input, calls into WalkInController, and prints the result. All
- * classification/queueing/matching logic lives in the control layer.
+ * classification/queueing/matching/verification logic lives in the
+ * control layer.
  */
 public class WalkInUI {
 
@@ -45,14 +48,48 @@ public class WalkInUI {
     }
 
     private void checkIn() {
-        Customer customer = controller.checkIn();
-        if (customer == null) {
-            System.out.println("\nNo more customers to check in from the hardcoded list.");
-            return;
+        System.out.print("Enter guest name: ");
+        String name = scanner.nextLine().trim();
+
+        RoomType requestedRoomType = readRoomTypeChoice();
+
+        System.out.print("Enter VIP code (leave blank if not vip, then press Enter): ");
+        String vipCodeInput = scanner.nextLine();
+
+        CheckInResult result = controller.checkIn(name, requestedRoomType, vipCodeInput);
+        Customer customer = result.getCustomer();
+
+        switch (result.getOutcome()) {
+            case VIP_REGISTERED:
+                System.out.println("VIP code verified. " + customer.getName() + " added to the VIP queue.");
+                break;
+            case STANDARD_NO_CODE:
+                System.out.println("No VIP code entered. " + customer.getName() + " added to the Standard queue.");
+                break;
+            case STANDARD_INVALID_CODE:
+                System.out.println("Invalid VIP code - proceeding as a standard guest.");
+                System.out.println(customer.getName() + " added to the Standard queue.");
+                break;
         }
-        String queueName = customer.getCustomerType() == entity.CustomerType.VIP ? "VIP" : "Standard";
-        System.out.println("\n" + customer.getName() + " (" + customer.getCustomerType() + ") checked in.");
-        System.out.println("Added to the " + queueName + " queue. Requested room type: " + customer.getRequestedRoomType());
+    }
+
+    private RoomType readRoomTypeChoice() {
+        RoomType[] types = RoomType.values();
+        System.out.println("Select requested room type:");
+        for (int i = 0; i < types.length; i++) {
+            System.out.println((i + 1) + ". " + types[i]);
+        }
+        System.out.print("Choice: ");
+        try {
+            int choice = Integer.parseInt(scanner.nextLine().trim());
+            if (choice >= 1 && choice <= types.length) {
+                return types[choice - 1];
+            }
+        } catch (NumberFormatException ignored) {
+            // falls through to default below
+        }
+        System.out.println("Invalid choice, defaulting to DELUXE.");
+        return RoomType.DELUXE;
     }
 
     private void assignWaitingCustomers() {

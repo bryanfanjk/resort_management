@@ -7,22 +7,26 @@ import entity.RoomType;
 /**
  * Author: <Your Name Here>
  *
- * Hardcoded customer data (walk-ins), no file/database. Deliberately
- * mixed - 4 STANDARD, 4 VIP, spread across all 3 room types - so that
- * running through the full menu produces a meaningful demo: VIP
- * priority, a room-type collision between a VIP and a STANDARD guest
- * both wanting Platinum, and at least one STANDARD guest who never
- * gets served because the Deluxe rooms run out ahead of them in queue
- * (the deliberate no-skip-ahead simplification documented in the
- * implementation plan).
+ * Hardcoded seed data used ONCE, at startup, to directly pre-populate
+ * the VIP and Standard queues. This replaces the old CustomerData
+ * class's role - previously "Walk In" drew from a list like this one
+ * click at a time; now Walk-In takes real manual input, and this data
+ * only exists to give the system something to work with (and to demo
+ * against) the instant it launches.
+ *
+ * Same mix as before - 4 STANDARD, 4 VIP, spread across all 3 room
+ * types - preserving the demo scenario already verified to work: VIP
+ * priority, a Platinum room-type collision between a VIP and a
+ * STANDARD guest, and a STANDARD guest who ends up blocking the rest
+ * of their queue once Deluxe rooms run out.
  */
-public final class CustomerData {
+public final class SeedCustomerData {
 
-    private CustomerData() {
+    private SeedCustomerData() {
         // static utility class - never instantiated
     }
 
-    public static Customer[] createCustomers() {
+    public static Customer[] createSeedCustomers() {
         return new Customer[]{
             new Customer("C001", "Ahmad Fauzi", CustomerType.STANDARD, RoomType.DELUXE),
             new Customer("C002", "Grace Lim", CustomerType.VIP, RoomType.PLATINUM),

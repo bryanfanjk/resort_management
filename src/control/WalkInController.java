@@ -3,8 +3,8 @@ package control;
 import adt.QueueInterface;
 import adt.StandardQueue;
 import boundary.WalkInUI;
-import dao.CustomerData;
 import dao.RoomData;
+import dao.SeedCustomerData;
 import entity.Customer;
 import entity.CustomerType;
 import entity.Room;
@@ -18,54 +18,75 @@ import entity.RoomType;
  * reaches into Module 2's VIP queue only through VipAllocationController
  * (never touching VipQueue itself), per the confirmed module split.
  *
+ * At construction, both queues are pre-populated directly from hardcoded
+ * seed data (SeedCustomerData) - this replaces the old design where
+ * Walk-In drew from that data one click at a time. From here on,
+ * checkIn() takes real manually-collected input.
+ *
  * It also owns main(), matching the ECBDemo reference convention
- * adopted for this project (ProductMaintenance.main() in that project),
- * rather than a separate main-package class.
+ * adopted for this project.
  *
  * No I/O here at all, per ECB rules for control classes - checkIn() and
  * assignRoom() return result objects; WalkInUI (boundary) is the one
- * that actually prints anything.
+ * that actually prints anything or reads Scanner input.
  */
 public class WalkInController {
 
-    private final Customer[] hardcodedCustomers;
-    private int nextCustomerIndex;
-
     private final QueueInterface<Customer> standardQueue;
     private final VipAllocationController vipController;
-
     private final Room[] rooms;
 
+    private int nextIdNumber;
+
     public WalkInController() {
-        this.hardcodedCustomers = CustomerData.createCustomers();
-        this.nextCustomerIndex = 0;
         this.standardQueue = new StandardQueue<>();
         this.vipController = new VipAllocationController();
         this.rooms = RoomData.createRooms();
+
+        Customer[] seedCustomers = SeedCustomerData.createSeedCustomers();
+        for (Customer seedCustomer : seedCustomers) {
+            if (seedCustomer.getCustomerType() == CustomerType.VIP) {
+                vipController.registerVip(seedCustomer);
+            } else {
+                standardQueue.enqueue(seedCustomer);
+            }
+        }
+        this.nextIdNumber = seedCustomers.length + 1;
     }
 
     /**
-     * Processes exactly ONE hardcoded customer per call (mirrors
-     * assignRoom()'s one-per-click pattern - confirmed design, and
-     * chosen deliberately so the eventual switch to manual input later
-     * doesn't require changing this interaction model at all).
+     * Manual check-in. Takes input already collected by the boundary
+     * (per ECB rules, this class does no Scanner reading itself).
      *
-     * @return the Customer just processed, or null if the hardcoded
-     * list has been fully processed already.
+     * VIP-code logic (confirmed design):
+     *   - blank/empty code            -> STANDARD_NO_CODE (Standard queue)
+     *   - code entered, valid         -> VIP_REGISTERED (VIP queue)
+     *   - code entered, doesn't match -> STANDARD_INVALID_CODE (Standard queue -
+     *     confirmed fallback, not an abort)
+     *
+     * @param name              customer's name as typed by staff
+     * @param requestedRoomType room type the customer wants
+     * @param vipCodeInput      raw code input - may be null or blank
      */
-    public Customer checkIn() {
-        if (nextCustomerIndex >= hardcodedCustomers.length) {
-            return null;
-        }
-        Customer customer = hardcodedCustomers[nextCustomerIndex];
-        nextCustomerIndex++;
+    public CheckInResult checkIn(String name, RoomType requestedRoomType, String vipCodeInput) {
+        String customerId = generateNextCustomerId();
+        String trimmedCode = (vipCodeInput == null) ? "" : vipCodeInput.trim();
 
-        if (customer.getCustomerType() == CustomerType.VIP) {
-            vipController.registerVip(customer);
-        } else {
+        if (trimmedCode.isEmpty()) {
+            Customer customer = new Customer(customerId, name, CustomerType.STANDARD, requestedRoomType);
             standardQueue.enqueue(customer);
+            return CheckInResult.standardNoCode(customer);
         }
-        return customer;
+
+        if (vipController.isValidVipCode(trimmedCode)) {
+            Customer customer = new Customer(customerId, name, CustomerType.VIP, requestedRoomType);
+            vipController.registerVip(customer);
+            return CheckInResult.vipRegistered(customer);
+        }
+
+        Customer customer = new Customer(customerId, name, CustomerType.STANDARD, requestedRoomType);
+        standardQueue.enqueue(customer);
+        return CheckInResult.standardInvalidCode(customer);
     }
 
     /**
@@ -118,6 +139,12 @@ public class WalkInController {
             }
         }
         return null;
+    }
+
+    private String generateNextCustomerId() {
+        String id = String.format("C%03d", nextIdNumber);
+        nextIdNumber++;
+        return id;
     }
 
     public static void main(String[] args) {

@@ -2,25 +2,27 @@ package control;
 
 import adt.QueueInterface;
 import adt.VipQueue;
+import dao.VipCodeData;
 import entity.Customer;
 
 /**
  * Author: <Your Name Here>
  *
  * VipAllocationController is Module 2's control class. It owns the VIP
- * queue and exposes a small service interface for WalkInController
- * (Module 1's control class) to call into - this is what keeps the
- * module boundary real in code, not just conceptual: WalkInController
- * never touches VipQueue directly, only through these methods.
+ * queue AND the VIP verification codes - code verification is
+ * inherently VIP-specific logic, so it belongs here, not in
+ * WalkInController, keeping the module boundary real in code.
  *
  * No I/O here at all, per ECB rules for control classes.
  */
 public class VipAllocationController {
 
     private final QueueInterface<Customer> vipQueue;
+    private final String[] validVipCodes;
 
     public VipAllocationController() {
         this.vipQueue = new VipQueue<>();
+        this.validVipCodes = VipCodeData.createValidVipCodes();
     }
 
     public void registerVip(Customer customer) {
@@ -42,4 +44,22 @@ public class VipAllocationController {
     public int waitingVipCount() {
         return vipQueue.size();
     }
+
+    /**
+     * Checks a manually-entered code against the hardcoded valid-code
+     * list. Exact match only, case-sensitive as entered - no retry
+     * loop here, single-shot check, matching the confirmed design.
+     */
+    public boolean isValidVipCode(String code) {
+        if (code == null) {
+            return false;
+        }
+        for (String validCode : validVipCodes) {
+            if (validCode.equals(code)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
+
