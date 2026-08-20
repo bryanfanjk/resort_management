@@ -9,6 +9,8 @@ import tarumtresort.entity.Room;
 import tarumtresort.entity.RoomType;
 import tarumtresort.entity.WaitingCustomer;
 import tarumtresort.util.DateValidator;
+import tarumtresort.util.IntegerReader;
+
 
 /** Staff console interface. */
 public class HotelCheckInUI {
@@ -31,7 +33,7 @@ public class HotelCheckInUI {
             System.out.println("6. Exit");
             System.out.println("=================================");
             System.out.print("Enter your choice: ");
-            choice = readInteger();
+            choice = IntegerReader.readInteger();
 
             switch (choice) {
                 case 1: addWalkInReservation(); break;
@@ -114,7 +116,7 @@ public class HotelCheckInUI {
         System.out.println("2. Waiting List Report");
         System.out.println("3. Back");
         System.out.print("Enter your choice: ");
-        switch (readInteger()) {
+        switch (IntegerReader.readInteger()) {
             case 1: viewFilteredReservationReport(); break;
             case 2: viewFilteredWaitingReport(); break;
             default: break;
@@ -223,19 +225,9 @@ public class HotelCheckInUI {
     private int readPositiveInteger(String prompt) {
         while (true) {
             System.out.print(prompt);
-            int value = readInteger();
+            int value = IntegerReader.readInteger();
             if (value > 0) return value;
             System.out.println("Value must be greater than 0.");
-        }
-    }
-
-    private int readInteger() {
-        while (true) {
-            try {
-                return Integer.parseInt(scanner.nextLine().trim());
-            } catch (NumberFormatException exception) {
-                System.out.print("Please enter a number: ");
-            }
         }
     }
 

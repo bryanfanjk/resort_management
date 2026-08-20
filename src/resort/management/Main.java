@@ -1,10 +1,10 @@
 package resort.management;
 
-import tarumtresort.boundary.HotelCheckInUI;
+import tarumtresort.boundary.MainMenu;
 
 public class Main {
 
     public static void main(String[] args) {
-        new HotelCheckInUI().start();
+        new MainMenu().menu();
     }
 }
