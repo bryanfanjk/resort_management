@@ -35,13 +35,13 @@ public class MainMenu {
                     new HotelCheckInUI().start();
                     break;
                 case 2:
-                    System.out.println("integrated in module 1");
+                    System.out.println("\nintegrated in module 1");
                     break;
                 case 3:
-                    System.out.println("not done");
+                    System.out.println("\nnot done");
                     break;
                 case 4:
-                    System.out.println("Not Decicded");
+                    System.out.println("\nNot Decided");
                 case 0:
                     System.out.println("\nSystem closed.");
                     break;

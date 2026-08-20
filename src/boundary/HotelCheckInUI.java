@@ -31,7 +31,7 @@ public class HotelCheckInUI {
             System.out.println("3. Check In Customer");
             System.out.println("4. View Room Status");
             System.out.println("5. View Reports");
-            System.out.println("6. Exit");
+            System.out.println("6. Back to main menu");
             System.out.println("=================================");
             System.out.print("Enter your choice: ");
             choice = IntegerReader.readInteger();
@@ -42,7 +42,7 @@ public class HotelCheckInUI {
                 case 3: checkInCustomer(); break;
                 case 4: displayRoomStatus(); break;
                 case 5: viewReports(); break;
-                case 6: System.out.println("\nSystem closed."); break;
+                case 6: break;
                 default: System.out.println("\nInvalid choice.");
             }
         } while (choice != 6);
