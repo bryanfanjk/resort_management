@@ -20,7 +20,8 @@ public class HotelCheckInUI {
     public void start() {
         int choice;
         do {
-            System.out.println("\nHotel Check-In System");
+            System.out.println("\n=================================");
+            System.out.println("Hotel Check-In System");
             System.out.println("=================================");
             System.out.println("1. Add Walk-In Reservation");
             System.out.println("2. Check Out");
@@ -28,6 +29,7 @@ public class HotelCheckInUI {
             System.out.println("4. View Room Status");
             System.out.println("5. View Reports");
             System.out.println("6. Exit");
+            System.out.println("=================================");
             System.out.print("Enter your choice: ");
             choice = readInteger();
 
@@ -44,13 +46,15 @@ public class HotelCheckInUI {
     }
 
     private void addWalkInReservation() {
-        System.out.println("\nAdd Walk-In Reservation");
+        System.out.println("\n=================================");
+        System.out.println("Add Walk-In Reservation");
         System.out.println("=================================");
         String name = readCustomerName();
         int pax = readPositiveInteger("Number of Pax: ");
         String checkInDate = readDate("Check-in Date (DD/MM/YYYY): ");
         int nightsStayed = readPositiveInteger("Nights Stayed: ");
         RoomType roomType = readRoomType();
+        
 
         controller.addWalkInReservation(new Customer(name, pax,
                 checkInDate, nightsStayed), roomType);
@@ -59,7 +63,8 @@ public class HotelCheckInUI {
     }
 
     private void checkOut() {
-        System.out.println("\nCheck Out");
+        System.out.println("\n=================================");
+        System.out.println("Check Out");
         System.out.println("=================================");
         int roomNumber = readPositiveInteger("Enter Room Number: ");
         String checkOutDate = readDate("Check-out Date (DD/MM/YYYY): ");
@@ -72,7 +77,8 @@ public class HotelCheckInUI {
 
     private void checkInCustomer() {
         AssignmentResult result = controller.allocateRoom();
-        System.out.println("\nCheck In Customer");
+        System.out.println("\n=================================");
+        System.out.println("Check In Customer");
         System.out.println("=================================");
         for (int i = 0; i < result.getSkippedCustomers().size(); i++) {
             WaitingCustomer customer = result.getSkippedCustomers().get(i);
@@ -90,7 +96,8 @@ public class HotelCheckInUI {
     }
 
     private void displayRoomStatus() {
-        System.out.println("\nRoom Status");
+        System.out.println("\n=================================");
+        System.out.println("Room Status");
         System.out.println("=================================");
         System.out.printf("%-10s %-12s %-10s %-12s%n",
                 "Room", "Type", "Capacity", "Status");
@@ -243,7 +250,7 @@ public class HotelCheckInUI {
 
     private RoomType readRoomType() {
         while (true) {
-            System.out.println("Desired Room Type: 1. Deluxe  2. Premium  3. Platinum");
+            System.out.println("Desired Room Type: (1)Deluxe (2)Premium (3)Platinum");
             System.out.print("Enter your choice: ");
             switch (scanner.nextLine().trim()) {
                 case "1": return RoomType.DELUXE;

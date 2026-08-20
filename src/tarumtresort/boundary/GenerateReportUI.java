@@ -21,7 +21,7 @@ public class GenerateReportUI {
         List<Reservation> reservations = controller.getAllReservationsSorted();
         System.out.println("\nAll Reservations Report"
                 + reservationFilterLabel(roomTypeFilter, checkedOutFilter));
-        System.out.println("=================================");
+        System.out.println("==============================================================================================");
         printReservationHeader();
 
         int displayed = 0;
@@ -37,6 +37,7 @@ public class GenerateReportUI {
                 displayed++;
             }
         }
+        System.out.println("-----------------------------------------------------------------------------------------------");
         if (displayed == 0) {
             System.out.println("No reservations found.");
         }
@@ -46,7 +47,7 @@ public class GenerateReportUI {
     public void displayWaitingReport(RoomType roomTypeFilter) {
         List<WaitingCustomer> waitingCustomers = controller.getWaitingCustomers();
         System.out.println("\nWaiting List Report" + filterLabel(roomTypeFilter));
-        System.out.println("=================================");
+        System.out.println("================================================================================");
         System.out.printf("%-10s %-20s %-8s %-15s %-12s %-12s%n",
                 "Position", "Customer Name", "Pax", "Check-in", "Nights",
                 "Room Type");
@@ -65,6 +66,7 @@ public class GenerateReportUI {
                 displayed++;
             }
         }
+        System.out.println("--------------------------------------------------------------------------------");
         if (displayed == 0) {
             System.out.println("No waiting customers found.");
         }
@@ -74,7 +76,7 @@ public class GenerateReportUI {
         System.out.printf("%-20s %-8s %-15s %-15s %-12s %-12s %-10s%n",
                 "Customer Name", "Pax", "Check-in", "Check-out", "Nights",
                 "Room Type", "Room");
-        System.out.println("---------------------------------------------------------------------------------------");
+        System.out.println("-----------------------------------------------------------------------------------------------");
     }
 
     private void printReservation(Reservation reservation) {
