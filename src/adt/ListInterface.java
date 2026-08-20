@@ -1,32 +1,31 @@
 package adt;
 
 /**
- * Author: <Your Name Here>
- *
- * QueueInterface specifies standard FIFO queue behaviour. Style matches
- * the ECBDemo reference project adopted for this project: operations
- * signal failure/empty via boolean or null returns, not custom
- * exceptions.
- *
- * @param <T> the element type stored
+ * Custom List ADT.
+ * This is not the Java Collections Framework.
+ * It supports insertion/removal in the middle, which a queue cannot do.
  */
 public interface ListInterface<T> {
 
-    /** Adds an item to the back of the queue. */
-    boolean enqueue(T item);
+    boolean add(T item);
 
-    /** Removes and returns the item at the front of the queue, or null if empty. */
-    T dequeue();
+    boolean add(int index, T item);
 
-    /** Returns (without removing) the item at the front of the queue, or null if empty. */
-    T peekFront();
+    T get(int index);
 
-    /** @return true if the queue contains no elements */
+    T set(int index, T item);
+
+    T remove(int index);
+
+    boolean removeItem(T item);
+
+    int indexOf(T item);
+
+    boolean contains(T item);
+
     boolean isEmpty();
 
-    /** @return true if the queue cannot accept more elements (always false here - see StandardQueue/VipQueue) */
-    boolean isFull();
-
-    /** @return the number of elements currently in the queue */
     int size();
+
+    void clear();
 }

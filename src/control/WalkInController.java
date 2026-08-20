@@ -1,81 +1,48 @@
-
 package control;
 
-import adt.StandardQueue;
-import boundary_UI.WalkInUI;
+import adt.StandardList;
+import adt.VipList;
+import boundary.WalkInUI;
 import dao.RoomData;
 import dao.SeedCustomerData;
 import entity.Customer;
 import entity.CustomerType;
 import entity.Room;
 import entity.RoomType;
-import adt.ListInterface;
 
-/**
- * Author: <Your Name Here>
- *
- * WalkInController is Module 1's control class - the integration point
- * that drives both modules. It owns the standard queue directly, and
- * reaches into Module 2's VIP queue only through VipAllocationController
- * (never touching VipQueue itself), per the confirmed module split.
- *
- * At construction, both queues are pre-populated directly from hardcoded
- * seed data (SeedCustomerData) - this replaces the old design where
- * Walk-In drew from that data one click at a time. From here on,
- * checkIn() takes real manually-collected input.
- *
- * It also owns main(), matching the ECBDemo reference convention
- * adopted for this project.
- *
- * No I/O here at all, per ECB rules for control classes - checkIn() and
- * assignRoom() return result objects; WalkInUI (boundary) is the one
- * that actually prints anything or reads Scanner input.
- */
 public class WalkInController {
 
-    private final ListInterface<Customer> standardQueue;
+    private final StandardList<Customer> standardList;
     private final VipAllocationController vipController;
     private final Room[] rooms;
 
     private int nextIdNumber;
 
     public WalkInController() {
-        this.standardQueue = new StandardQueue<>();
+        this.standardList = new StandardList<>();
         this.vipController = new VipAllocationController();
         this.rooms = RoomData.createRooms();
 
         Customer[] seedCustomers = SeedCustomerData.createSeedCustomers();
-        for (Customer seedCustomer : seedCustomers) {
-            if (seedCustomer.getCustomerType() == CustomerType.VIP) {
-                vipController.registerVip(seedCustomer);
+
+        for (Customer customer : seedCustomers) {
+            if (customer.getCustomerType() == CustomerType.VIP) {
+                vipController.registerVip(customer);
             } else {
-                standardQueue.enqueue(seedCustomer);
+                standardList.add(customer);
             }
         }
+
         this.nextIdNumber = seedCustomers.length + 1;
     }
 
-    /**
-     * Manual check-in. Takes input already collected by the boundary
-     * (per ECB rules, this class does no Scanner reading itself).
-     *
-     * VIP-code logic (confirmed design):
-     *   - blank/empty code            -> STANDARD_NO_CODE (Standard queue)
-     *   - code entered, valid         -> VIP_REGISTERED (VIP queue)
-     *   - code entered, doesn't match -> STANDARD_INVALID_CODE (Standard queue -
-     *     confirmed fallback, not an abort)
-     *
-     * @param name              customer's name as typed by staff
-     * @param requestedRoomType room type the customer wants
-     * @param vipCodeInput      raw code input - may be null or blank
-     */
     public CheckInResult checkIn(String name, RoomType requestedRoomType, String vipCodeInput) {
         String customerId = generateNextCustomerId();
         String trimmedCode = (vipCodeInput == null) ? "" : vipCodeInput.trim();
 
         if (trimmedCode.isEmpty()) {
             Customer customer = new Customer(customerId, name, CustomerType.STANDARD, requestedRoomType);
-            standardQueue.enqueue(customer);
+            standardList.add(customer);
             return CheckInResult.standardNoCode(customer);
         }
 
@@ -86,72 +53,83 @@ public class WalkInController {
         }
 
         Customer customer = new Customer(customerId, name, CustomerType.STANDARD, requestedRoomType);
-        standardQueue.enqueue(customer);
+        standardList.add(customer);
         return CheckInResult.standardInvalidCode(customer);
     }
 
-    /**
-     * Attempts to assign a room to exactly one waiting customer.
-     * VIP queue is checked first (if non-empty); the Standard queue is
-     * only checked once the VIP queue is empty.
-     *
-     * IMPORTANT ordering: the front customer is PEEKED first, and only
-     * actually dequeued once a matching room has been confirmed
-     * available. Dequeuing first would lose the customer from the
-     * queue entirely if no matching room existed.
-     *
-     * This version keeps the same flow as the project spec, but exposes the
-     * queue state cleanly so the boundary can show the actual waiting status
-     * after every action.
-     */
     public RoomAssignmentResult assignRoom() {
-        Customer target;
-        boolean fromVipQueue;
-
+        // 1. VIP list takes priority
         if (vipController.hasWaitingVip()) {
-            target = vipController.peekNextVip();
-            fromVipQueue = true;
-        } else if (!standardQueue.isEmpty()) {
-            target = standardQueue.peekFront();
-            fromVipQueue = false;
-        } else {
-            return RoomAssignmentResult.noCustomersWaiting();
+            VipList<Customer> vipList = vipController.getVipList();
+
+            for (int i = 0; i < vipList.size(); i++) {
+                Customer customer = vipList.get(i);
+                Room room = findAvailableRoom(customer.getRequestedRoomType());
+
+                if (room != null) {
+                    vipList.remove(i);
+                    room.setAvailable(false);
+                    return RoomAssignmentResult.success(customer, room);
+                }
+            }
         }
 
-        Room matchedRoom = findAvailableRoom(target.getRequestedRoomType());
-        if (matchedRoom == null) {
-            return RoomAssignmentResult.noRoomAvailable(target);
+        // 2. If no VIP customer can be assigned, try Standard list
+        if (!standardList.isEmpty()) {
+            for (int i = 0; i < standardList.size(); i++) {
+                Customer customer = standardList.get(i);
+                Room room = findAvailableRoom(customer.getRequestedRoomType());
+
+                if (room != null) {
+                    standardList.remove(i);
+                    room.setAvailable(false);
+                    return RoomAssignmentResult.success(customer, room);
+                }
+            }
         }
 
-        if (fromVipQueue) {
-            vipController.getNextVip();
-        } else {
-            standardQueue.dequeue();
+        // 3. Only fail if there are waiting customers but all rooms are unavailable
+        if (vipController.hasWaitingVip()) {
+            return RoomAssignmentResult.noRoomAvailable(vipController.peekNextVip());
         }
-        matchedRoom.setAvailable(false);
 
-        return RoomAssignmentResult.success(target, matchedRoom);
+        if (!standardList.isEmpty()) {
+            return RoomAssignmentResult.noRoomAvailable(standardList.get(0));
+        }
+
+        return RoomAssignmentResult.noCustomersWaiting();
     }
 
-    public int getStandardQueueSize() {
-        return standardQueue.size();
+    public int getStandardListSize() {
+        return standardList.size();
     }
 
-    public int getVipQueueSize() {
+    public int getVipListSize() {
         return vipController.waitingVipCount();
     }
 
+    public StandardList<Customer> getStandardList() {
+        return standardList;
+    }
+
+    public VipList<Customer> getVipList() {
+        return vipController.getVipList();
+    }
+
     public Customer peekNextStandardCustomer() {
-        return standardQueue.peekFront();
+        if (standardList.isEmpty()) {
+            return null;
+        }
+        return standardList.get(0);
     }
 
     public Customer peekNextVipCustomer() {
         return vipController.peekNextVip();
     }
 
-    public String getQueueStatusSummary() {
-        return "VIP waiting: " + getVipQueueSize()
-                + " | Standard waiting: " + getStandardQueueSize();
+    public String getWaitingListSummary() {
+        return "VIP waiting: " + getVipListSize()
+                + " | Standard waiting: " + getStandardListSize();
     }
 
     private Room findAvailableRoom(RoomType requestedType) {

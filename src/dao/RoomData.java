@@ -27,7 +27,7 @@ public final class RoomData {
             new Room(103, 1, RoomType.DELUXE, true),
             new Room(201, 2, RoomType.PREMIUM, true),
             new Room(202, 2, RoomType.PREMIUM, true),
-            new Room(301, 3, RoomType.PLATINUM, true),
+            new Room(301, 3, RoomType.PLATINUM, false),
             new Room(302, 3, RoomType.PLATINUM, false)  // pre-occupied
         };
     }
