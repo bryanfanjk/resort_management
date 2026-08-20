@@ -1,4 +1,4 @@
-package tarumtresort.entity;
+package entity;
 
 public enum RoomStatus {
     AVAILABLE("Available"),

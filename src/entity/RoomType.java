@@ -1,4 +1,4 @@
-package tarumtresort.entity;
+package entity;
 
 /** The accommodation categories offered by the resort. */
 public enum RoomType {

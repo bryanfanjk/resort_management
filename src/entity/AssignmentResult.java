@@ -1,6 +1,6 @@
-package tarumtresort.entity;
+package entity;
 
-import tarumtresort.adt.List;
+import adt.List;
 
 /** Result of one staff-triggered waiting-list assignment attempt. */
 public class AssignmentResult {

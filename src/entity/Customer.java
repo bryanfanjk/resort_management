@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package tarumtresort.entity;
+package entity;
 
 public class Customer {
     private String customerName;
@@ -10,23 +10,34 @@ public class Customer {
     private String checkInDate;
     private String checkOutDate;
     private int nightsStayed;
+    private CustomerType customerType;
+
+    public Customer(String customerName, int pax, String checkInDate,
+            int nightsStayed, CustomerType customerType) {
+        this(customerName, pax, checkInDate, null, nightsStayed,
+                customerType);
+    }
 
     public Customer(String customerName, int pax,
                     String checkInDate, String checkOutDate,
-                    int nightsStayed) {
+                    int nightsStayed, CustomerType customerType) {
 
         this.customerName = customerName;
         this.pax = pax;
         this.checkInDate = checkInDate;
         this.checkOutDate = checkOutDate;
         this.nightsStayed = nightsStayed;
+        this.customerType = customerType;
+    }
+    
+    public CustomerType getCustomerType() {
+        return customerType;
     }
 
-    public Customer(String customerName, int pax, String checkInDate,
-                    int nightsStayed) {
-        this(customerName, pax, checkInDate, null, nightsStayed);
+    public void setCustomerType(CustomerType customerType) {
+        this.customerType = customerType;
     }
-
+    
     public String getCustomerName() {
         return customerName;
     }

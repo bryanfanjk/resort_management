@@ -1,7 +1,7 @@
-package tarumtresort.dao;
+package dao;
 
-import tarumtresort.entity.Room;
-import tarumtresort.entity.RoomType;
+import entity.Room;
+import entity.RoomType;
 
 /** Hardcoded room data*/
 public final class RoomData {

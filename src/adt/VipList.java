@@ -1,30 +1,46 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package tarumtresort.adt;
+package adt;
 
-public class List<T> implements ListInterface<T> {
+public class VipList<T> implements ListInterface<T> {
 
     private T[] data;
     private int size;
 
-    @SuppressWarnings("unchecked")
-    public List(int capacity) {
+
+    public VipList(int capacity) {
         data = (T[]) new Object[capacity];
         size = 0;
     }
 
-    @Override
-    public void add(T item) {
 
-        if (size == data.length) {
-            System.out.println("List is full.");
-            return;
+    @Override
+    public boolean add(T item) {
+        if (item == null || size == data.length) {
+            return false;
         }
 
         data[size] = item;
         size++;
+        return true;
+    }
+
+    @Override
+    public boolean add(int index, T item) {
+        if (item == null
+                || index < 0
+                || index > size
+                || size == data.length) {
+            return false;
+        }
+
+        for (int currentIndex = size;
+             currentIndex > index;
+             currentIndex--) {
+            data[currentIndex] = data[currentIndex - 1];
+        }
+
+        data[index] = item;
+        size++;
+        return true;
     }
 
     @Override
@@ -35,6 +51,17 @@ public class List<T> implements ListInterface<T> {
         }
 
         return data[index];
+    }
+
+    @Override
+    public T set(int index, T item) {
+        if (index < 0 || index >= size || item == null) {
+            return null;
+        }
+
+        T oldItem = data[index];
+        data[index] = item;
+        return oldItem;
     }
 
     @Override

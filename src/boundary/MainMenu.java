@@ -2,11 +2,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package tarumtresort.boundary;
+package boundary;
 
 import java.util.Scanner;
-import tarumtresort.boundary.HotelCheckInUI;
-import tarumtresort.util.IntegerReader;
+import boundary.HotelCheckInUI;
+import util.IntegerReader;
 
 /**
  *

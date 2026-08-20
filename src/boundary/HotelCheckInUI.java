@@ -1,15 +1,16 @@
-package tarumtresort.boundary;
+package boundary;
 
 import java.util.Scanner;
-import tarumtresort.control.HotelController;
-import tarumtresort.entity.AssignmentResult;
-import tarumtresort.entity.Customer;
-import tarumtresort.entity.Reservation;
-import tarumtresort.entity.Room;
-import tarumtresort.entity.RoomType;
-import tarumtresort.entity.WaitingCustomer;
-import tarumtresort.util.DateValidator;
-import tarumtresort.util.IntegerReader;
+import control.HotelController;
+import entity.AssignmentResult;
+import entity.Customer;
+import entity.Reservation;
+import entity.Room;
+import entity.RoomType;
+import entity.WaitingCustomer;
+import util.DateValidator;
+import util.IntegerReader;
+import entity.CustomerType;
 
 
 /** Staff console interface. */
@@ -56,12 +57,31 @@ public class HotelCheckInUI {
         String checkInDate = readDate("Check-in Date (DD/MM/YYYY): ");
         int nightsStayed = readPositiveInteger("Nights Stayed: ");
         RoomType roomType = readRoomType();
+        System.out.print(
+        "Enter VIP code, or press Enter for standard customer: ");
+        String vipCode = scanner.nextLine().trim();
         
+        Customer customer = new Customer(
+        name,
+        pax,
+        checkInDate,
+        nightsStayed, CustomerType.STANDARD);
 
-        controller.addWalkInReservation(new Customer(name, pax,
-                checkInDate, nightsStayed), roomType);
-        System.out.println("\nWalk-in reservation added to the waiting list.");
-        System.out.println("Waiting Position: " + controller.getWaitingCount());
+        WaitingCustomer waitingCustomer =
+        controller.addWalkInReservation(
+                customer,
+                roomType,
+                vipCode);
+
+        if (waitingCustomer.getCustomerType()
+            == CustomerType.VIP) {
+
+            System.out.println(
+            "\nVIP customer added to the VIP waiting list.");
+    }   else {
+            System.out.println(
+                "\nStandard customer added to the standard waiting list.");
+    }
     }
 
     private void checkOut() {

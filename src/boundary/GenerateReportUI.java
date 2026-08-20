@@ -1,10 +1,10 @@
-package tarumtresort.boundary;
+package boundary;
 
-import tarumtresort.adt.List;
-import tarumtresort.control.HotelController;
-import tarumtresort.entity.Reservation;
-import tarumtresort.entity.RoomType;
-import tarumtresort.entity.WaitingCustomer;
+import adt.List;
+import control.HotelController;
+import entity.Reservation;
+import entity.RoomType;
+import entity.WaitingCustomer;
 
 /** Displays active, waiting, and completed-reservation reports. */
 public class GenerateReportUI {

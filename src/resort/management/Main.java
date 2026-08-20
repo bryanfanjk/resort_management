@@ -1,6 +1,6 @@
 package resort.management;
 
-import tarumtresort.boundary.MainMenu;
+import boundary.MainMenu;
 
 public class Main {
 

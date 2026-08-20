@@ -1,16 +1,21 @@
-package tarumtresort.control;
+package control;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import tarumtresort.adt.List;
-import tarumtresort.dao.RoomData;
-import tarumtresort.entity.AssignmentResult;
-import tarumtresort.entity.Customer;
-import tarumtresort.entity.Reservation;
-import tarumtresort.entity.Room;
-import tarumtresort.entity.RoomStatus;
-import tarumtresort.entity.RoomType;
-import tarumtresort.entity.WaitingCustomer;
+import adt.List;
+import dao.ApprovedReservationData;
+import dao.CheckedOutReservationData;
+import dao.RoomData;
+import dao.StandardWaitingCustomerData;
+import dao.VipWaitingCustomerData;
+import entity.AssignmentResult;
+import entity.Customer;
+import entity.CustomerType;
+import entity.Reservation;
+import entity.Room;
+import entity.RoomStatus;
+import entity.RoomType;
+import entity.WaitingCustomer;
 
 /** Coordinates check-in, checkout, and list-based waiting-customer assignment. */
 public class HotelController {
@@ -19,12 +24,15 @@ public class HotelController {
     private final List<WaitingCustomer> waitingCustomers = new List<>(100);
     private final List<Reservation> activeReservations = new List<>(100);
     private final List<Reservation> completedReservations = new List<>(100);
+    private final VipAllocationController vipController
+        = new VipAllocationController();
 
     public HotelController() {
         this(RoomData.createRooms());
-        generateInitialCustomers();
-        generateWaitingCustomers();
-        generateInitialCheckedOutReservations();
+        loadApprovedReservations();
+        loadCheckedOutReservations();
+        loadStandardWaitingCustomers();
+        loadVipWaitingCustomers();
     }
 
     public HotelController(Room[] rooms) {
@@ -33,15 +41,30 @@ public class HotelController {
 
     public boolean customerExists(String name) {
         return containsReservationCustomer(activeReservations, name)
-                || containsWaitingCustomer(name);
+                || containsReservationCustomer(completedReservations, name)
+                || containsWaitingCustomer(name)
+                || containsVipWaitingCustomer(name);
     }
 
-    /** Records a walk-in reservation; staff allocate a room later. */
     public WaitingCustomer addWalkInReservation(Customer customer,
                                                  RoomType requestedRoomType) {
+        return addWalkInReservation(customer, requestedRoomType, null);
+        }
+
+        public WaitingCustomer addWalkInReservation(Customer customer,
+                             RoomType requestedRoomType,
+                             String vipCode) {
+        CustomerType customerType = vipController.isValidVipCode(vipCode)
+            ? CustomerType.VIP : CustomerType.STANDARD;
+        customer.setCustomerType(customerType);
+
         WaitingCustomer waitingCustomer = new WaitingCustomer(customer,
-                requestedRoomType, waitingCustomers.size() + 1);
-        waitingCustomers.add(waitingCustomer);
+            requestedRoomType, getTotalWaitingCount() + 1);
+        if (customerType == CustomerType.VIP) {
+            vipController.addVip(waitingCustomer);
+        } else {
+            waitingCustomers.add(waitingCustomer);
+        }
         return waitingCustomer;
     }
 
@@ -53,6 +76,9 @@ public class HotelController {
         }
 
         Reservation reservation = removeReservationForRoom(roomNumber);
+        if (reservation == null) {
+            return false;
+        }
         reservation.getCustomer().setCheckOutDate(checkOutDate);
         completedReservations.add(reservation);
         room.setStatus(RoomStatus.AVAILABLE);
@@ -61,7 +87,21 @@ public class HotelController {
 
     /* Scans waiting customers in waiting-position order. Stops immediately after assigning one customer. */
     public AssignmentResult allocateRoom() {
-        List<WaitingCustomer> skippedCustomers = new List<>(waitingCustomers.size());
+        List<WaitingCustomer> skippedCustomers = new List<>(
+            getTotalWaitingCount());
+
+        for (int index = 0; index < vipController.waitingVipCount(); index++) {
+            WaitingCustomer waitingCustomer = vipController.getVip(index);
+            Room room = findAvailableRoom(waitingCustomer.getPax(),
+                waitingCustomer.getRequestedRoomType());
+            if (room != null) {
+            vipController.removeVip(index);
+            resequenceVipWaitingPositions();
+            return approveCustomer(waitingCustomer, room,
+                skippedCustomers);
+            }
+            skippedCustomers.add(waitingCustomer);
+        }
 
         for (int index = 0; index < waitingCustomers.size(); index++) {
             WaitingCustomer waitingCustomer = waitingCustomers.get(index);
@@ -75,11 +115,7 @@ public class HotelController {
 
             waitingCustomers.remove(index);
             resequenceWaitingPositions();
-            room.setStatus(RoomStatus.OCCUPIED);
-            Reservation reservation = new Reservation(waitingCustomer, room,
-                    waitingCustomer.getRequestedRoomType());
-            activeReservations.add(reservation);
-            return new AssignmentResult(skippedCustomers, reservation);
+                return approveCustomer(waitingCustomer, room, skippedCustomers);
         }
         return new AssignmentResult(skippedCustomers, null);
     }
@@ -96,7 +132,7 @@ public class HotelController {
     }
 
     public int getWaitingCount() {
-        return waitingCustomers.size();
+        return getTotalWaitingCount();
     }
 
     public Room[] getRooms() {
@@ -133,6 +169,10 @@ public class HotelController {
 
     public List<WaitingCustomer> getWaitingCustomers() {
         return waitingCustomers;
+    }
+
+    public adt.VipList<WaitingCustomer> getVipWaitingCustomers() {
+        return vipController.getVipList();
     }
 
     private Room findRoom(int roomNumber) {
@@ -205,80 +245,64 @@ public class HotelController {
         return false;
     }
 
-    private void generateInitialCustomers() {
-        allocateInitialRoom(new Customer("Yung Onn", 3, "14/08/2026", 2), RoomType.PLATINUM);
-        allocateInitialRoom(new Customer("Jia Ming", 1, "14/08/2026", 1), RoomType.PREMIUM);
-        allocateInitialRoom(new Customer("Chun Yi", 2, "14/08/2026", 4), RoomType.DELUXE);
-        allocateInitialRoom(new Customer("Ali", 1, "14/08/2026", 2), RoomType.DELUXE);
-        allocateInitialRoom(new Customer("Brandon Lee", 2, "14/08/2026", 3), RoomType.PREMIUM);
-        allocateInitialRoom(new Customer("Mei Ling", 3, "14/08/2026", 4), RoomType.PLATINUM);
+    private boolean containsVipWaitingCustomer(String name) {
+        for (int index = 0; index < vipController.waitingVipCount(); index++) {
+            if (vipController.getVip(index).getCustomerName()
+                    .equalsIgnoreCase(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    private void generateWaitingCustomers() {
-        addWaitingCustomer(new Customer("Daniel Kumar", 2, "14/08/2026", 2),
-                RoomType.DELUXE);
-        addWaitingCustomer(new Customer("Evelyn Tan", 3, "14/08/2026", 3),
-                RoomType.PREMIUM);
-        addWaitingCustomer(new Customer("Farid Ismail", 1, "15/08/2026", 1),
-                RoomType.DELUXE);
-        addWaitingCustomer(new Customer("Grace Wong", 2, "15/08/2026", 2),
-                RoomType.PREMIUM);
-        addWaitingCustomer(new Customer("Harith Zain", 3, "16/08/2026", 3),
-                RoomType.PLATINUM);
-        addWaitingCustomer(new Customer("Irene Goh", 1, "16/08/2026", 2),
-                RoomType.DELUXE);
-        addWaitingCustomer(new Customer("Jason Lim", 3, "17/08/2026", 4),
-                RoomType.PREMIUM);
-        addWaitingCustomer(new Customer("Kavita Devi", 4, "17/08/2026", 2),
-                RoomType.PLATINUM);
-        addWaitingCustomer(new Customer("Leon Tan", 2, "18/08/2026", 3),
-                RoomType.DELUXE);
-        addWaitingCustomer(new Customer("Maya Cheong", 2, "18/08/2026", 1),
-                RoomType.PREMIUM);
-        addWaitingCustomer(new Customer("Nabil Aziz", 3, "19/08/2026", 5),
-                RoomType.PLATINUM);
-        addWaitingCustomer(new Customer("Olivia Ng", 1, "19/08/2026", 2),
-                RoomType.DELUXE);
-        addWaitingCustomer(new Customer("Pavithra Rao", 3, "20/08/2026", 3),
-                RoomType.PREMIUM);
-        addWaitingCustomer(new Customer("Qamar Shah", 5, "20/08/2026", 2),
-                RoomType.PLATINUM);
+    private int getTotalWaitingCount() {
+        return waitingCustomers.size() + vipController.waitingVipCount();
     }
 
-    private void addWaitingCustomer(Customer customer, RoomType roomType) {
-        waitingCustomers.add(new WaitingCustomer(customer, roomType,
-                waitingCustomers.size() + 1));
+    private AssignmentResult approveCustomer(
+            WaitingCustomer customer, Room room,
+            List<WaitingCustomer> skippedCustomers) {
+        room.setStatus(RoomStatus.OCCUPIED);
+        Reservation reservation = new Reservation(customer, room,
+                customer.getRequestedRoomType());
+        activeReservations.add(reservation);
+        return new AssignmentResult(skippedCustomers, reservation);
     }
 
-    /** Creates completed reservations with varied data for report demonstrations. */
-    private void generateInitialCheckedOutReservations() {
-        addCompletedReservation("Hannah Low", 1, "01/08/2026", "03/08/2026", 2, 101);
-        addCompletedReservation("Ivan Chong", 2, "01/08/2026", "02/08/2026", 1, 103);
-        addCompletedReservation("Jasmine Koh", 1, "02/08/2026", "05/08/2026", 3, 201);
-        addCompletedReservation("Khalid Musa", 3, "02/08/2026", "06/08/2026", 4, 203);
-        addCompletedReservation("Lina Yap", 3, "03/08/2026", "04/08/2026", 1, 301);
-        addCompletedReservation("Nora Lee", 4, "03/08/2026", "08/08/2026", 5, 303);
-        addCompletedReservation("Omar Aziz", 1, "04/08/2026", "06/08/2026", 2, 102);
-        addCompletedReservation("Priya Nair", 2, "04/08/2026", "09/08/2026", 5, 202);
-        addCompletedReservation("Qistina Hamid", 3, "05/08/2026", "07/08/2026", 2, 302);
-        addCompletedReservation("Ravi Kumar", 4, "05/08/2026", "12/08/2026", 7, 304);
+    private void resequenceVipWaitingPositions() {
+        for (int index = 0; index < vipController.waitingVipCount(); index++) {
+            vipController.getVip(index).setWaitingPosition(index + 1);
+        }
     }
 
-    private void addCompletedReservation(String name, int pax, String checkInDate,
-                                         String checkOutDate, int nightsStayed,
-                                         int roomNumber) {
-        Room room = findRoom(roomNumber);
-        Customer customer = new Customer(name, pax, checkInDate, checkOutDate,
-                nightsStayed);
-        completedReservations.add(new Reservation(customer, room, room.getRoomType()));
+    private void loadApprovedReservations() {
+        Reservation[] reservations = ApprovedReservationData.createNew(rooms);
+        for (Reservation reservation : reservations) {
+            reservation.getRoom().setStatus(RoomStatus.OCCUPIED);
+            activeReservations.add(reservation);
+        }
     }
 
-    /** Adds sample customers already allocated to rooms when the app starts. */
-    private void allocateInitialRoom(Customer customer, RoomType roomType) {
-        Room room = findAvailableRoom(customer.getPax(), roomType);
-        if (room != null) {
-            room.setStatus(RoomStatus.OCCUPIED);
-            activeReservations.add(new Reservation(customer, room, roomType));
+    private void loadCheckedOutReservations() {
+        Reservation[] reservations = CheckedOutReservationData.createNew(rooms);
+        for (Reservation reservation : reservations) {
+            completedReservations.add(reservation);
+        }
+    }
+
+    private void loadStandardWaitingCustomers() {
+        WaitingCustomer[] customers = StandardWaitingCustomerData.createNew();
+        for (int index = 0; index < customers.length; index++) {
+            customers[index].setWaitingPosition(index + 1);
+            waitingCustomers.add(customers[index]);
+        }
+    }
+
+    private void loadVipWaitingCustomers() {
+        WaitingCustomer[] customers = VipWaitingCustomerData.createNew();
+        for (int index = 0; index < customers.length; index++) {
+            customers[index].setWaitingPosition(index + 1);
+            vipController.addVip(customers[index]);
         }
     }
 }
