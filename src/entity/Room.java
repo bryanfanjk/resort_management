@@ -1,33 +1,35 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package entity;
 
+/**
+ * Author: <Your Name Here>
+ *
+ * Room is a plain data object (POJO) - no Scanner input, no System.out
+ * output, per ECB rules for entity classes.
+ */
 public class Room {
-    private int roomNumber;
-    private int capacity;
-    private RoomType roomType;
-    private RoomStatus status;
 
-    
-    public Room(int roomNumber, int capacity) {
-        this(roomNumber, capacity, RoomType.DELUXE);
+    private final int roomNumber;
+    private final int floor;
+    private final RoomType roomType;
+    private boolean available;
+
+    public Room(int roomNumber, int floor, RoomType roomType) {
+        this(roomNumber, floor, roomType, true);
     }
 
-    public Room(int roomNumber, int capacity, RoomType roomType) {
+    public Room(int roomNumber, int floor, RoomType roomType, boolean available) {
         this.roomNumber = roomNumber;
-        this.capacity = capacity;
+        this.floor = floor;
         this.roomType = roomType;
-        this.status = RoomStatus.AVAILABLE;
+        this.available = available;
     }
 
     public int getRoomNumber() {
         return roomNumber;
     }
 
-    public int getCapacity() {
-        return capacity;
+    public int getFloor() {
+        return floor;
     }
 
     public RoomType getRoomType() {
@@ -35,26 +37,33 @@ public class Room {
     }
 
     public boolean isAvailable() {
-        return status == RoomStatus.AVAILABLE;
+        return available;
     }
 
     public void setAvailable(boolean available) {
-        this.status = available ? RoomStatus.AVAILABLE : RoomStatus.OCCUPIED;
+        this.available = available;
     }
 
-    public RoomStatus getStatus() {
-        return status;
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Room)) {
+            return false;
+        }
+        Room other = (Room) obj;
+        return this.roomNumber == other.roomNumber;
     }
 
-    public void setStatus(RoomStatus status) {
-        this.status = status;
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(roomNumber);
     }
 
     @Override
     public String toString() {
-        return "Room " + roomNumber +
-               " | Type: " + roomType.getDisplayName() +
-               " | Capacity: " + capacity +
-               " | Status: " + status.getDisplayName();
+        return String.format("Room %d (Floor %d, %s) - %s",
+                roomNumber, floor, roomType, available ? "Available" : "Occupied");
     }
 }

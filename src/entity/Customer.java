@@ -1,98 +1,78 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package entity;
 
-public class Customer implements Comparable<Customer>{
-    private String customerName;
-    private int pax;
-    private String checkInDate;
-    private String checkOutDate;
-    private int nightsStayed;
-    private LoyaltyTier tier;
-    private int loyaltyPoints;
-    private final int REGISTRATION_SEQUENCE;
-    private static int sequenceCounter = 0;
+/**
+ * Author: <Your Name Here>
+ *
+ * Customer is a plain data object (POJO) - no Scanner input, no
+ * System.out output, per ECB rules for entity classes.
+ *
+ * Note: no VipTier field here yet - that's a Phase B addition, and per
+ * the open fork discussed, whether it becomes a nullable field on this
+ * class or a separate VIP-specific subtype is still to be decided when
+ * Phase B actually starts.
+ */
+public class Customer {
 
-    public Customer(String customerName, int pax,
-                    String checkInDate, String checkOutDate,
-                    int nightsStayed, LoyaltyTier tier, int loyaltyPoints) {
+    private final String customerId;
+    private String name;
+    private CustomerType customerType;
+    private RoomType requestedRoomType;
 
-        this.customerName = customerName;
-        this.pax = pax;
-        this.checkInDate = checkInDate;
-        this.checkOutDate = checkOutDate;
-        this.nightsStayed = nightsStayed;
-        this.tier =tier;
-        this.loyaltyPoints = loyaltyPoints;
-        this.REGISTRATION_SEQUENCE = sequenceCounter++;
+    public Customer(String customerId, String name, CustomerType customerType, RoomType requestedRoomType) {
+        this.customerId = customerId;
+        this.name = name;
+        this.customerType = customerType;
+        this.requestedRoomType = requestedRoomType;
     }
 
-    public String getCustomerName() {
-        return customerName;
+    public String getCustomerId() {
+        return customerId;
     }
 
-    public int getPax() {
-        return pax;
+    public String getName() {
+        return name;
     }
 
-    public String getCheckInDate() {
-        return checkInDate;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public LoyaltyTier getTier() {
-        return tier;
+    public CustomerType getCustomerType() {
+        return customerType;
     }
 
-    public void setTier(LoyaltyTier tier) {
-        this.tier = tier;
+    public void setCustomerType(CustomerType customerType) {
+        this.customerType = customerType;
     }
 
-    public int getLoyaltyPoints() {
-        return loyaltyPoints;
+    public RoomType getRequestedRoomType() {
+        return requestedRoomType;
     }
 
-    public void setLoyaltyPoints(int loyaltyPoints) {
-        this.loyaltyPoints = loyaltyPoints;
-    }
-    
-    public int getRegistrationSequence(){
-        return this.REGISTRATION_SEQUENCE;
+    public void setRequestedRoomType(RoomType requestedRoomType) {
+        this.requestedRoomType = requestedRoomType;
     }
 
-    public String getCheckOutDate() {
-        return checkOutDate;
-    }
-
-    public int getNightsStayed() {
-        return nightsStayed;
-    }
-    
-        @Override
-    public int compareTo(Customer other) {
-        int tierComparison = this.tier.getRank() - other.tier.getRank();
-        if (tierComparison != 0) {
-            return tierComparison;
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
         }
-        int pointsComparison = this.loyaltyPoints - other.loyaltyPoints;
-        if (pointsComparison != 0) {
-            return pointsComparison;
+        if (!(obj instanceof Customer)) {
+            return false;
         }
-        // Earlier arrival (smaller sequence number) must produce a LARGER
-        // compareTo result, since smaller sequence = higher priority.
-        return (int) (other.REGISTRATION_SEQUENCE - this.REGISTRATION_SEQUENCE);
+        Customer other = (Customer) obj;
+        return this.customerId.equals(other.customerId);
     }
 
+    @Override
+    public int hashCode() {
+        return customerId.hashCode();
+    }
 
     @Override
     public String toString() {
-        return "Customer Name: " + customerName +
-               "\nPax: " + pax +
-               "\nCheck-in Date: " + checkInDate +
-               "\nCheck-out Date: " + checkOutDate +
-               "\nNights Stayed: " + nightsStayed +
-               "\nTier:"  + tier.getLabel() +
-               "\nLoyalty Points: "+ loyaltyPoints;
+        return String.format("[%s] %-16s | %-8s | Requested: %s",
+                customerId, name, customerType, requestedRoomType);
     }
 }
