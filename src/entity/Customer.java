@@ -12,15 +12,25 @@ public class Customer {
     private int nightsStayed;
     private CustomerType customerType;
 
+    private String confirmationNumber;
+
     public Customer(String customerName, int pax, String checkInDate,
             int nightsStayed, CustomerType customerType) {
         this(customerName, pax, checkInDate, null, nightsStayed,
-                customerType);
+                customerType, "");
     }
 
     public Customer(String customerName, int pax,
                     String checkInDate, String checkOutDate,
                     int nightsStayed, CustomerType customerType) {
+        this(customerName, pax, checkInDate, checkOutDate, nightsStayed,
+                customerType, "");
+    }
+
+    public Customer(String customerName, int pax,
+                    String checkInDate, String checkOutDate,
+                    int nightsStayed, CustomerType customerType,
+                    String confirmationNumber) {
 
         this.customerName = customerName;
         this.pax = pax;
@@ -28,8 +38,17 @@ public class Customer {
         this.checkOutDate = checkOutDate;
         this.nightsStayed = nightsStayed;
         this.customerType = customerType;
+        this.confirmationNumber = confirmationNumber != null ? confirmationNumber : "";
     }
     
+    public String getConfirmationNumber() {
+        return confirmationNumber;
+    }
+
+    public void setConfirmationNumber(String confirmationNumber) {
+        this.confirmationNumber = confirmationNumber != null ? confirmationNumber : "";
+    }
+
     public CustomerType getCustomerType() {
         return customerType;
     }

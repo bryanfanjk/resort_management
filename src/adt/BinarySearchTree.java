@@ -4,7 +4,7 @@
  * Non-Linear ADT: Binary Search Tree (BST)
  * Adapted from standard Data Structures and Algorithms Binary Search Tree concepts.
  */
-package tarumtresort.adt;
+package adt;
 
 public class BinarySearchTree<K extends Comparable<K>, V> {
 

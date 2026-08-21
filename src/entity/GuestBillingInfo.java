@@ -1,7 +1,7 @@
 /*
  * Entity class representing guest information and billing details.
  */
-package tarumtresort.entity;
+package entity;
 
 public class GuestBillingInfo {
 
@@ -31,12 +31,25 @@ public class GuestBillingInfo {
         return room;
     }
 
+    public void setRoom(Room room) {
+        this.room = room;
+    }
+
     public double getDailyRoomRate() {
         return dailyRoomRate;
     }
 
+    public void setDailyRoomRate(double dailyRoomRate) {
+        this.dailyRoomRate = dailyRoomRate;
+        this.totalBillAmount = calculateTotalBill();
+    }
+
     public double getTotalBillAmount() {
         return totalBillAmount;
+    }
+
+    public void recalculateBill() {
+        this.totalBillAmount = calculateTotalBill();
     }
 
     public double calculateTotalBill() {

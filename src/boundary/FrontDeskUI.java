@@ -1,34 +1,54 @@
 /*
- * Author: Antigravity
- * 
  * Boundary class interacting with the user/actor (Front-Desk Agent).
  * Interacts only with Actor (via Scanner/Console) and Control object (FrontDeskControl).
  */
-package tarumtresort.boundary;
+package boundary;
 
 import java.util.Scanner;
-import tarumtresort.control.FrontDeskControl;
-import tarumtresort.entity.GuestBillingInfo;
-import tarumtresort.entity.Room;
+import control.FrontDeskControl;
+import dao.RoomData;
+import entity.GuestBillingInfo;
+import entity.Room;
 
 public class FrontDeskUI {
 
     private FrontDeskControl control;
     private Scanner scanner;
+    private Room[] rooms;
+
+    public FrontDeskUI() {
+        this(new FrontDeskControl(), RoomData.createRooms());
+    }
 
     public FrontDeskUI(FrontDeskControl control) {
-        this.control = control;
+        this(control, RoomData.createRooms());
+    }
+
+    public FrontDeskUI(FrontDeskControl control, Room[] rooms) {
+        this.control = control != null ? control : new FrontDeskControl();
         this.scanner = new Scanner(System.in);
+        this.rooms = rooms != null ? rooms : RoomData.createRooms();
+    }
+
+    public void displayFrontDeskMenu() {
+        displayFrontDeskMenu(this.rooms != null ? this.rooms : RoomData.createRooms());
+    }
+
+    public void start() {
+        displayFrontDeskMenu();
     }
 
     public void displayFrontDeskMenu(Room[] rooms) {
+        if (rooms != null) {
+            this.rooms = rooms;
+        }
         int choice;
 
         do {
             System.out.println("\n=================================");
             System.out.println("     FRONT-DESK SERVICE MENU     ");
             System.out.println("=================================");
-            System.out.println("1. Search Guest Information (8-digit Confirmation No.)");
+            System.out.println("1. Search Guest Information (8-digit Confirmation No., e.g. CONF0001)");
             System.out.println("2. Query Room Availability");
             System.out.println("3. View Billing Details");
             System.out.println("4. Guest Information Retrieval Report (All / Filtered)");
@@ -48,7 +68,7 @@ public class FrontDeskUI {
                     handleGuestSearch();
                     break;
                 case 2:
-                    handleRoomAvailabilityQuery(rooms);
+                    handleRoomAvailabilityQuery(this.rooms);
                     break;
                 case 3:
                     handleBillingQuery();
@@ -57,7 +77,7 @@ public class FrontDeskUI {
                     handleGuestInformationReport();
                     break;
                 case 5:
-                    handleRoomAvailabilitySummaryReport(rooms);
+                    handleRoomAvailabilitySummaryReport(this.rooms);
                     break;
                 case 6:
                     System.out.println("Returning to Main Menu...");
@@ -70,11 +90,11 @@ public class FrontDeskUI {
 
     private void handleGuestSearch() {
         System.out.println("\n--- Search Guest Information ---");
-        System.out.print("Enter 8-digit Confirmation Number: ");
-        String confNum = scanner.nextLine().trim();
+        System.out.print("Enter 8-digit Confirmation Number (e.g. CONF0001): ");
+        String confNum = scanner.nextLine().trim().toUpperCase();
 
-        if (confNum.length() != 8 || !confNum.matches("\\d{8}")) {
-            System.out.println("Invalid format. Confirmation number must be exactly 8 digits.");
+        if (confNum.length() != 8 || !confNum.matches("[A-Z0-9]{8}")) {
+            System.out.println("Invalid format. Confirmation number must be 8 characters (e.g. CONF0001).");
             return;
         }
 
@@ -97,11 +117,11 @@ public class FrontDeskUI {
 
     private void handleBillingQuery() {
         System.out.println("\n--- Guest Billing Inquiry ---");
-        System.out.print("Enter 8-digit Confirmation Number: ");
-        String confNum = scanner.nextLine().trim();
+        System.out.print("Enter 8-digit Confirmation Number (e.g. CONF0001): ");
+        String confNum = scanner.nextLine().trim().toUpperCase();
 
-        if (confNum.length() != 8 || !confNum.matches("\\d{8}")) {
-            System.out.println("Invalid format. Confirmation number must be exactly 8 digits.");
+        if (confNum.length() != 8 || !confNum.matches("[A-Z0-9]{8}")) {
+            System.out.println("Invalid format. Confirmation number must be 8 characters (e.g. CONF0001).");
             return;
         }
 
@@ -110,8 +130,8 @@ public class FrontDeskUI {
             System.out.println("\nBilling Details:");
             System.out.println("---------------------------------");
             System.out.println("Confirmation Number: " + guestInfo.getConfirmationNumber());
-            System.out.println("Customer Name      : " + guestInfo.getCustomer().getCustomerName());
-            System.out.println("Nights Stayed      : " + guestInfo.getCustomer().getNightsStayed());
+            System.out.println("Customer Name      : " + (guestInfo.getCustomer() != null ? guestInfo.getCustomer().getCustomerName() : "N/A"));
+            System.out.println("Nights Stayed      : " + (guestInfo.getCustomer() != null ? guestInfo.getCustomer().getNightsStayed() : 0));
             System.out.println("Daily Room Rate    : $" + String.format("%.2f", guestInfo.getDailyRoomRate()));
             System.out.println("Total Amount Due   : $" + String.format("%.2f", guestInfo.getTotalBillAmount()));
             System.out.println("---------------------------------");
@@ -160,7 +180,7 @@ public class FrontDeskUI {
             String name = (g.getCustomer() != null) ? g.getCustomer().getCustomerName() : "N/A";
             int pax = (g.getCustomer() != null) ? g.getCustomer().getPax() : 0;
             String checkIn = (g.getCustomer() != null) ? g.getCustomer().getCheckInDate() : "N/A";
-            String checkOut = (g.getCustomer() != null) ? g.getCustomer().getCheckOutDate() : "N/A";
+            String checkOut = (g.getCustomer() != null && g.getCustomer().getCheckOutDate() != null) ? g.getCustomer().getCheckOutDate() : "-";
 
             System.out.printf("%-12s %-18s %-5d %-12s %-12s %-10s $%-11.2f%n",
                     g.getConfirmationNumber(),

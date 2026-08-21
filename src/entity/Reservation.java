@@ -8,16 +8,35 @@ public class Reservation {
     private Customer customer;
     private Room room;
     private RoomType requestedRoomType;
+    private String confirmationNumber;
 
     public Reservation(Customer customer, Room room) {
-        this(customer, room, room == null ? null : room.getRoomType());
+        this(customer, room, room == null ? null : room.getRoomType(), "");
+    }
+
+    public Reservation(Customer customer, Room room, RoomType requestedRoomType) {
+        this(customer, room, requestedRoomType, "");
+    }
+
+    public Reservation(Customer customer, Room room, String confirmationNumber) {
+        this(customer, room, room == null ? null : room.getRoomType(), confirmationNumber);
     }
 
     public Reservation(Customer customer, Room room,
-                       RoomType requestedRoomType) {
+                       RoomType requestedRoomType, String confirmationNumber) {
         this.customer = customer;
         this.room = room;
         this.requestedRoomType = requestedRoomType;
+        if (confirmationNumber != null && !confirmationNumber.isEmpty()) {
+            this.confirmationNumber = confirmationNumber;
+            if (customer != null && (customer.getConfirmationNumber() == null || customer.getConfirmationNumber().isEmpty())) {
+                customer.setConfirmationNumber(confirmationNumber);
+            }
+        } else if (customer != null && customer.getConfirmationNumber() != null && !customer.getConfirmationNumber().isEmpty()) {
+            this.confirmationNumber = customer.getConfirmationNumber();
+        } else {
+            this.confirmationNumber = "";
+        }
     }
 
     public Customer getCustomer() {

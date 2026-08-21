@@ -2,26 +2,132 @@
  * Control class implementing business logic for Front-Desk operations.
  * Manages guest retrieval via Non-Linear ADT (BinarySearchTree), room availability, and billing calculations.
  */
-package tarumtresort.control;
+package control;
 
-import tarumtresort.adt.BinarySearchTree;
-import tarumtresort.entity.GuestBillingInfo;
-import tarumtresort.entity.Room;
+import adt.BinarySearchTree;
+import dao.ApprovedReservationData;
+import dao.CheckedOutReservationData;
+import dao.RoomData;
+import dao.StandardWaitingCustomerData;
+import dao.VipWaitingCustomerData;
+import entity.GuestBillingInfo;
+import entity.Reservation;
+import entity.Room;
+import entity.RoomType;
+import entity.WaitingCustomer;
 
 public class FrontDeskControl {
 
     private BinarySearchTree<String, GuestBillingInfo> guestBst;
 
     public FrontDeskControl() {
+        this(RoomData.createRooms());
+    }
+
+    public FrontDeskControl(Room[] rooms) {
         this.guestBst = new BinarySearchTree<>();
+        loadInitialDaoData(rooms != null ? rooms : RoomData.createRooms());
     }
 
     /**
-     * Registers guest billing info into the Non-Linear BST ADT indexed by 8-digit confirmation number.
+     * Loads initial seed data from DAO files into BST with CONF0001 - CONF0012.
+     */
+    public void loadInitialDaoData(Room[] rooms) {
+        int counter = 1;
+
+        // 1. Approved Reservations (Active)
+        Reservation[] approved = ApprovedReservationData.createNew(rooms);
+        for (Reservation res : approved) {
+            String code = String.format("CONF%04d", counter++);
+            res.setConfirmationNumber(code);
+            if (res.getCustomer() != null) {
+                res.getCustomer().setConfirmationNumber(code);
+            }
+            double rate = getDailyRate(res.getRoom() != null ? res.getRoom().getRoomType() : null);
+            registerGuestInfo(new GuestBillingInfo(code, res.getCustomer(), res.getRoom(), rate));
+        }
+
+        // 2. Checked-Out Reservations (Historical)
+        Reservation[] checkedOut = CheckedOutReservationData.createNew(rooms);
+        for (Reservation res : checkedOut) {
+            String code = String.format("CONF%04d", counter++);
+            res.setConfirmationNumber(code);
+            if (res.getCustomer() != null) {
+                res.getCustomer().setConfirmationNumber(code);
+            }
+            double rate = getDailyRate(res.getRoom() != null ? res.getRoom().getRoomType() : null);
+            registerGuestInfo(new GuestBillingInfo(code, res.getCustomer(), res.getRoom(), rate));
+        }
+
+        // 3. VIP Waiting Customers
+        WaitingCustomer[] vips = VipWaitingCustomerData.createNew();
+        for (WaitingCustomer vip : vips) {
+            String code = String.format("CONF%04d", counter++);
+            vip.setConfirmationNumber(code);
+            double rate = getDailyRate(vip.getRequestedRoomType());
+            registerGuestInfo(new GuestBillingInfo(code, vip, null, rate));
+        }
+
+        // 4. Standard Waiting Customers
+        WaitingCustomer[] stds = StandardWaitingCustomerData.createNew();
+        for (WaitingCustomer std : stds) {
+            String code = String.format("CONF%04d", counter++);
+            std.setConfirmationNumber(code);
+            double rate = getDailyRate(std.getRequestedRoomType());
+            registerGuestInfo(new GuestBillingInfo(code, std, null, rate));
+        }
+    }
+
+    public static double getDailyRate(RoomType roomType) {
+        if (roomType == null) {
+            return 150.0;
+        }
+        switch (roomType) {
+            case DELUXE:
+                return 150.0;
+            case PREMIUM:
+                return 250.0;
+            case PLATINUM:
+                return 400.0;
+            default:
+                return 150.0;
+        }
+    }
+
+    /**
+     * Registers or updates guest billing info into the Non-Linear BST ADT indexed by 8-digit confirmation number.
      */
     public void registerGuestInfo(GuestBillingInfo guestInfo) {
         if (guestInfo != null && guestInfo.getConfirmationNumber() != null) {
-            guestBst.insert(guestInfo.getConfirmationNumber(), guestInfo);
+            guestBst.insert(guestInfo.getConfirmationNumber().trim().toUpperCase(), guestInfo);
+        }
+    }
+
+    /**
+     * Updates room assignment for an existing guest in BST.
+     */
+    public void updateGuestRoomAssignment(String confirmationNumber, Room room) {
+        if (confirmationNumber == null) return;
+        GuestBillingInfo info = searchGuestByConfirmation(confirmationNumber);
+        if (info != null) {
+            info.setRoom(room);
+            if (room != null && room.getRoomType() != null) {
+                info.setDailyRoomRate(getDailyRate(room.getRoomType()));
+            }
+            registerGuestInfo(info);
+        }
+    }
+
+    /**
+     * Updates checkout date for an existing guest in BST.
+     */
+    public void updateGuestCheckout(String confirmationNumber, String checkOutDate) {
+        if (confirmationNumber == null) return;
+        GuestBillingInfo info = searchGuestByConfirmation(confirmationNumber);
+        if (info != null && info.getCustomer() != null) {
+            info.getCustomer().setCheckOutDate(checkOutDate);
+            info.recalculateBill();
+            registerGuestInfo(info);
         }
     }
 
@@ -32,7 +138,7 @@ public class FrontDeskControl {
         if (confirmationNumber == null || confirmationNumber.trim().isEmpty()) {
             return null;
         }
-        return guestBst.search(confirmationNumber.trim());
+        return guestBst.search(confirmationNumber.trim().toUpperCase());
     }
 
     /**
@@ -84,10 +190,13 @@ public class FrontDeskControl {
      * Retrieves guests filtered by check-in date (DD/MM/YYYY).
      */
     public GuestBillingInfo[] getFilteredGuestsByCheckIn(String checkInDate) {
+        if (checkInDate == null) {
+            return new GuestBillingInfo[0];
+        }
         GuestBillingInfo[] all = getAllGuests();
         int count = 0;
         for (GuestBillingInfo g : all) {
-            if (g != null && g.getCustomer() != null && checkInDate.equalsIgnoreCase(g.getCustomer().getCheckInDate())) {
+            if (g != null && g.getCustomer() != null && g.getCustomer().getCheckInDate() != null && checkInDate.equalsIgnoreCase(g.getCustomer().getCheckInDate())) {
                 count++;
             }
         }
@@ -95,7 +204,7 @@ public class FrontDeskControl {
         GuestBillingInfo[] filtered = new GuestBillingInfo[count];
         int index = 0;
         for (GuestBillingInfo g : all) {
-            if (g != null && g.getCustomer() != null && checkInDate.equalsIgnoreCase(g.getCustomer().getCheckInDate())) {
+            if (g != null && g.getCustomer() != null && g.getCustomer().getCheckInDate() != null && checkInDate.equalsIgnoreCase(g.getCustomer().getCheckInDate())) {
                 filtered[index++] = g;
             }
         }
