@@ -1,7 +1,5 @@
 package control;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import adt.List;
 import dao.ApprovedReservationData;
 import dao.CheckedOutReservationData;
@@ -12,11 +10,14 @@ import entity.AssignmentResult;
 import entity.Customer;
 import entity.CustomerType;
 import entity.GuestBillingInfo;
+import entity.HousekeepingStatus;
 import entity.Reservation;
 import entity.Room;
 import entity.RoomStatus;
 import entity.RoomType;
 import entity.WaitingCustomer;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /** Coordinates check-in, checkout, and list-based waiting-customer assignment. */
 /* author: Fan Jin Kit & Ng Yung Onn */
@@ -57,22 +58,22 @@ public class HotelController {
     
     /* author: Fan Jin Kit & Ng Yung Onn*/
     public WaitingCustomer addWalkInReservation(Customer customer,
-                                                 RoomType requestedRoomType) {
+            RoomType requestedRoomType) {
         return addWalkInReservation(customer, requestedRoomType, null);
     }
 
     public WaitingCustomer addWalkInReservation(Customer customer,
-                         RoomType requestedRoomType,
-                         String vipCode) {
+            RoomType requestedRoomType,
+            String vipCode) {
         CustomerType customerType = vipController.isValidVipCode(vipCode)
-            ? CustomerType.VIP : CustomerType.STANDARD;
+                ? CustomerType.VIP : CustomerType.STANDARD;
         customer.setCustomerType(customerType);
 
         String confCode = String.format("CONF%04d", confirmationCounter++);
         customer.setConfirmationNumber(confCode);
 
         WaitingCustomer waitingCustomer = new WaitingCustomer(customer,
-            requestedRoomType, getTotalWaitingCount() + 1);
+                requestedRoomType, getTotalWaitingCount() + 1);
         if (customerType == CustomerType.VIP) {
             vipController.addVip(waitingCustomer);
         } else {
@@ -101,6 +102,7 @@ public class HotelController {
         reservation.getCustomer().setCheckOutDate(checkOutDate);
         completedReservations.add(reservation);
         room.setStatus(RoomStatus.AVAILABLE);
+        room.setHousekeepingStatus(HousekeepingStatus.DIRTY);
         room.setCurrentGuestConfirmation(null);
 
         frontDeskControl.updateGuestCheckout(reservation.getConfirmationNumber(), checkOutDate);
@@ -111,12 +113,12 @@ public class HotelController {
     /* Scans waiting customers in waiting-position order. Stops immediately after assigning one customer. */
     public AssignmentResult allocateRoom() {
         List<WaitingCustomer> skippedCustomers = new List<>(
-            getTotalWaitingCount());
+                getTotalWaitingCount());
 
         for (int index = 0; index < vipController.waitingVipCount(); index++) {
             WaitingCustomer waitingCustomer = vipController.getVip(index);
             Room room = findAvailableRoom(waitingCustomer.getPax(),
-                waitingCustomer.getRequestedRoomType());
+                    waitingCustomer.getRequestedRoomType());
             if (room != null) {
                 vipController.removeVip(index);
                 resequenceVipWaitingPositions();
@@ -243,7 +245,7 @@ public class HotelController {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         int dateComparison = LocalDate.parse(first.getCustomer().getCheckInDate(),
                 formatter).compareTo(LocalDate.parse(second.getCustomer().getCheckInDate(),
-                formatter));
+                        formatter));
         if (dateComparison != 0) {
             return dateComparison;
         }
@@ -259,7 +261,7 @@ public class HotelController {
     
     /* author: Fan Jin Kit */
     private boolean containsReservationCustomer(List<Reservation> source,
-                                                String name) {
+            String name) {
         for (int i = 0; i < source.size(); i++) {
             if (source.get(i).getCustomer().getCustomerName()
                     .equalsIgnoreCase(name)) {

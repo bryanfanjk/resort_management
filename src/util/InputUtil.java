@@ -49,6 +49,12 @@ public class InputUtil {
         }
     }
 
+    public static String readStringWithSkip(String prompt) {
+        System.out.print(prompt);
+        String input = scanner.nextLine().trim();
+        return input;
+    }
+
     public static String readContactNumber(String prompt) {
         while (true) {
             String contact = readString(prompt);
