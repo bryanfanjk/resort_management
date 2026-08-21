@@ -22,7 +22,7 @@ import java.time.format.DateTimeFormatter;
 /**
  * Coordinates check-in, checkout, and list-based waiting-customer assignment.
  */
-/* author: Fan Jin Kit & Ng Yung Onn */
+/* author: All Members have contributed in this controller. */
 public class HotelController {
 
     private final Room[] rooms;

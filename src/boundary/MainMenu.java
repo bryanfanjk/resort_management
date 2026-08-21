@@ -21,6 +21,8 @@ public class MainMenu {
     private final HousekeepingController housekeepingController;
     private final HotelCheckInUI checkInUI;
     private final HousekeepingUI housekeepingUI;
+    private final VipAllocationUI vipAllocationUI =
+        new VipAllocationUI(hotelController);
 
     public MainMenu() {
         Room[] roomsArray = hotelController.getRooms();
@@ -56,7 +58,7 @@ public class MainMenu {
                     new HotelCheckInUI(hotelController).start();
                     break;
                 case 2:
-                    System.out.println("\nintegrated in module 1");
+                    vipAllocationUI.start();
                     break;
                 case 3:
                     housekeepingUI.start();
