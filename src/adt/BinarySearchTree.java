@@ -3,9 +3,10 @@
  */
 package adt;
 
-public class BinarySearchTree<K extends Comparable<K>, V> {
+public class BinarySearchTree<K extends Comparable<K>, V> implements TreeInterface<K, V> {
 
     private class Node {
+
         K key;
         V value;
         Node left;
@@ -28,7 +29,9 @@ public class BinarySearchTree<K extends Comparable<K>, V> {
     }
 
     public void insert(K key, V value) {
-        if (key == null) return;
+        if (key == null) {
+            return;
+        }
         root = insertRecursive(root, key, value);
     }
 
@@ -52,7 +55,9 @@ public class BinarySearchTree<K extends Comparable<K>, V> {
     }
 
     public V search(K key) {
-        if (key == null) return null;
+        if (key == null) {
+            return null;
+        }
         return searchRecursive(root, key);
     }
 
@@ -88,7 +93,9 @@ public class BinarySearchTree<K extends Comparable<K>, V> {
     }
 
     private void inOrderTraversal(Node current, Object[] result, int[] index) {
-        if (current == null) return;
+        if (current == null) {
+            return;
+        }
         inOrderTraversal(current.left, result, index);
         result[index[0]++] = current.value;
         inOrderTraversal(current.right, result, index);

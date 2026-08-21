@@ -1,12 +1,16 @@
 package boundary;
 
 import adt.LinkedStack;
+import adt.List;
 import adt.ListInterface;
 import control.AuthController;
 import control.HousekeepingController;
+import control.HousekeepingReportController;
 import entity.HousekeepingLog;
+import entity.HousekeepingReport;
 import entity.HousekeepingStatus;
 import entity.Room;
+import entity.RoomType;
 import util.InputUtil;
 
 public class HousekeepingUI {
@@ -15,6 +19,7 @@ public class HousekeepingUI {
     private final LinkedStack<HousekeepingLog> stack;
     private final ListInterface<Room> rooms;
     private final AuthController authController;
+    private final HousekeepingReportController reportController;
 
     public HousekeepingUI(HousekeepingController controller,
             LinkedStack<HousekeepingLog> stack,
@@ -24,6 +29,8 @@ public class HousekeepingUI {
         this.stack = stack;
         this.rooms = rooms;
         this.authController = authController;
+        // Pass the stack directly - will convert to list when needed
+        this.reportController = new HousekeepingReportController(stack, rooms);
     }
 
     public void start() {
@@ -41,10 +48,11 @@ public class HousekeepingUI {
             System.out.println("4. Bulk Rollback Multiple Actions (ADT popMany)");
             System.out.println("5. View Current Housekeeping Rollback Stack");
             System.out.println("6. View Room Cleaning Status Registry");
-            System.out.println("7. Logout");
-            System.out.println("8. Back to Main Menu");
+            System.out.println("7. View Housekeeping Reports");
+            System.out.println("8. Logout");
+            System.out.println("9. Back to Main Menu");
 
-            int choice = InputUtil.readInt("Enter choice (1-8): ", 1, 8);
+            int choice = InputUtil.readInt("Enter choice (1-9): ", 1, 9);
             switch (choice) {
                 case 1:
                     updateStatus();
@@ -65,9 +73,12 @@ public class HousekeepingUI {
                     viewRoomsRegistry();
                     break;
                 case 7:
+                    reportMenu();
+                    break;
+                case 8:
                     logout();
                     return;
-                case 8:
+                case 9:
                     logout();
                     return;
             }
@@ -79,7 +90,6 @@ public class HousekeepingUI {
         System.out.println("HOUSEKEEPING SYSTEM LOGIN");
         System.out.println("=========================================");
 
-        // Show available users
         System.out.println("\nAvailable Users:");
         System.out.println("  Staff: staff1, staff2, staff3 (Password: staff123/456/789)");
         System.out.println("  Supervisors: supervisor1, supervisor2 (Password: sup123/456)");
@@ -124,7 +134,6 @@ public class HousekeepingUI {
             return;
         }
 
-        // Show current status
         Room room = findRoom(roomNum);
         if (room == null) {
             System.out.println("ERROR: Room number not found.");
@@ -330,11 +339,230 @@ public class HousekeepingUI {
         InputUtil.pressEnterToContinue();
     }
 
+    // REPORT MENU - 2 Reports
+    private void reportMenu() {
+        while (true) {
+            InputUtil.displayHeader("Housekeeping Reports");
+            System.out.println("1. Room Cleaning Status Report");
+            System.out.println("2. Housekeeping Action Audit Report");
+            System.out.println("3. Back to Main Menu");
+
+            int choice = InputUtil.readInt("Select report (1-3): ", 1, 3);
+            switch (choice) {
+                case 1:
+                    displayRoomCleaningStatusReport();
+                    break;
+                case 2:
+                    displayActionAuditReport();
+                    break;
+                case 3:
+                    return;
+            }
+        }
+    }
+
+    // ============================================================
+    // REPORT 1: ROOM CLEANING STATUS REPORT
+    // ============================================================
+    private void displayRoomCleaningStatusReport() {
+        InputUtil.displayHeader("Room Cleaning Status Report");
+
+        // Filter options
+        System.out.println("\n--- FILTER OPTIONS ---");
+        System.out.println("Filter by Room Type:");
+        System.out.println("1. All Room Types");
+        System.out.println("2. Deluxe");
+        System.out.println("3. Premium");
+        System.out.println("4. Platinum");
+        int typeChoice = InputUtil.readInt("Select room type: ", 1, 4);
+        RoomType roomTypeFilter = (typeChoice == 1) ? null : RoomType.values()[typeChoice - 2];
+
+        System.out.println("\nFilter by Cleaning Status:");
+        System.out.println("1. All Statuses");
+        System.out.println("2. Dirty");
+        System.out.println("3. Cleaning In Progress");
+        System.out.println("4. Inspected");
+        System.out.println("5. Ready for Check-In");
+        int statusChoice = InputUtil.readInt("Select status: ", 1, 5);
+        HousekeepingStatus statusFilter = (statusChoice == 1) ? null : HousekeepingStatus.values()[statusChoice - 2];
+
+        System.out.println("\nSort by:");
+        System.out.println("1. Room Number (Ascending)");
+        System.out.println("2. Room Number (Descending)");
+        System.out.println("3. Status (Ascending)");
+        System.out.println("4. Status (Descending)");
+        int sortChoice = InputUtil.readInt("Select sort option: ", 1, 4);
+
+        // Generate report with filters
+        HousekeepingReport report = reportController.generateRoomStatusReport(roomTypeFilter, statusFilter);
+        ListInterface<Room> sortedRooms = reportController.sortRoomsForReport(sortChoice, report.getRooms());
+
+        // Display Report
+        printReportHeader("ROOM CLEANING STATUS REPORT");
+
+        // Show filter summary
+        System.out.println("\n--- APPLIED FILTERS ---");
+        System.out.println("Room Type: " + (roomTypeFilter == null ? "All" : roomTypeFilter.getDisplayName()));
+        System.out.println("Status: " + (statusFilter == null ? "All" : statusFilter.getLabel()));
+        System.out.println("Sort: " + getSortDescription(sortChoice));
+
+        // Show statistics
+        printStatusStatistics(sortedRooms);
+
+        // Show room details
+        System.out.println("\n--- ROOM DETAILS ---");
+        System.out.printf("%-10s %-12s %-22s %-15s %-10s\n",
+                "Room No", "Room Type", "Cleaning Status", "Occupancy", "Sequence");
+        System.out.println("---------------------------------------------------------------------------------");
+
+        int displayCount = 0;
+        for (int i = 0; i < sortedRooms.size(); i++) {
+            Room room = sortedRooms.get(i);
+            String occupancy = room.isVacant() ? "Vacant" : "Occupied";
+            System.out.printf("%-10d %-12s %-22s %-15s %-10d\n",
+                    room.getRoomNumber(),
+                    room.getRoomType().getDisplayName(),
+                    room.getHousekeepingStatus().getLabel(),
+                    occupancy,
+                    room.getHousekeepingStatus().getSequenceNumber());
+            displayCount++;
+        }
+
+        // Summary
+        System.out.println("\n--- SUMMARY ---");
+        System.out.printf("Total Rooms Displayed: %d\n", displayCount);
+        System.out.printf("Ready for Check-In: %d\n", countRoomsByStatus(sortedRooms, HousekeepingStatus.READY));
+        System.out.printf("Needs Cleaning (Dirty): %d\n", countRoomsByStatus(sortedRooms, HousekeepingStatus.DIRTY));
+        System.out.printf("Being Cleaned: %d\n", countRoomsByStatus(sortedRooms, HousekeepingStatus.CLEANING_IN_PROGRESS));
+        System.out.printf("Pending Inspection: %d\n", countRoomsByStatus(sortedRooms, HousekeepingStatus.INSPECTED));
+
+        printReportFooter();
+        InputUtil.pressEnterToContinue();
+    }
+
+    // ============================================================
+    // REPORT 2: HOUSEKEEPING ACTION AUDIT REPORT (Simplified)
+    // ============================================================
+    private void displayActionAuditReport() {
+        InputUtil.displayHeader("Housekeeping Action Audit Report");
+
+        // Simple filters
+        System.out.println("\n--- FILTER OPTIONS ---");
+        System.out.println("Filter by Room Number (Optional):");
+        System.out.println("Enter room number (or 0 for all rooms): ");
+        int roomFilter = InputUtil.readInt("Room number: ", 0, 510);
+
+        System.out.println("\nFilter by Staff Name (Optional):");
+        System.out.println("Enter staff name (or leave empty for all): ");
+        String staffFilter = InputUtil.readStringWithSkip("Staff name: ");
+
+        System.out.println("\nSort by:");
+        System.out.println("1. Timestamp (Newest First)");
+        System.out.println("2. Timestamp (Oldest First)");
+        System.out.println("3. Room Number (Ascending)");
+        int sortChoice = InputUtil.readInt("Select sort option: ", 1, 3);
+
+        // Get filtered and sorted logs - using the stack directly
+        ListInterface<HousekeepingLog> allLogs = stack.toList();
+        ListInterface<HousekeepingLog> filteredLogs = reportController.filterAuditLogs(allLogs, roomFilter, staffFilter);
+        ListInterface<HousekeepingLog> sortedLogs = reportController.sortAuditLogs(filteredLogs, sortChoice);
+
+        // Display Report
+        System.out.println("\n=====================================================================================================");
+        System.out.println("                     TARUMT RESORTS - HOUSEKEEPING ACTION AUDIT REPORT                     ");
+        System.out.println("=====================================================================================================");
+
+        // Show filter summary
+        System.out.println("\n--- FILTERS APPLIED ---");
+        System.out.println("Room: " + (roomFilter == 0 ? "All" : roomFilter));
+        System.out.println("Staff: " + (staffFilter.isEmpty() ? "All" : staffFilter));
+        System.out.println("Sort: " + getAuditSortDescription(sortChoice));
+        System.out.println("Total Records: " + sortedLogs.size());
+
+        // Show audit log
+        System.out.println("\n-----------------------------------------------------------------------------------------------------");
+        System.out.printf("%-10s | %-8s | %-15s | %-20s | %-20s\n",
+                "Timestamp", "Room No", "Staff/Supervisor", "Old Status", "New Status");
+        System.out.println("-----------------------------------------------------------------------------------------------------");
+
+        if (sortedLogs.size() > 0) {
+            for (int i = 0; i < sortedLogs.size(); i++) {
+                HousekeepingLog log = sortedLogs.get(i);
+                System.out.printf("%-10s | %-8d | %-15s | %-20s | %-20s\n",
+                        log.getTimestamp(),
+                        log.getRoomNumber(),
+                        log.getSupervisorName(),
+                        log.getOldStatus().getLabel(),
+                        log.getNewStatus().getLabel());
+            }
+        } else {
+            System.out.println("No matching audit records found.");
+        }
+
+        System.out.println("-----------------------------------------------------------------------------------------------------");
+        System.out.println("=====================================================================================================");
+
+        InputUtil.pressEnterToContinue();
+    }
+
+    // ============================================================
+    // HELPER METHODS
+    // ============================================================
+    private void printReportHeader(String title) {
+        System.out.println("\n" + "=".repeat(80));
+        System.out.println(title);
+        System.out.println("Generated: " + java.time.LocalDateTime.now()
+                .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
+        System.out.println("=".repeat(80));
+    }
+
+    private void printReportFooter() {
+        System.out.println("\n" + "=".repeat(80));
+        System.out.println("END OF REPORT");
+        System.out.println("=".repeat(80));
+    }
+
+    private void printStatusStatistics(ListInterface<Room> rooms) {
+        int dirty = 0, cleaning = 0, inspected = 0, ready = 0;
+        for (int i = 0; i < rooms.size(); i++) {
+            Room room = rooms.get(i);
+            switch (room.getHousekeepingStatus()) {
+                case DIRTY:
+                    dirty++;
+                    break;
+                case CLEANING_IN_PROGRESS:
+                    cleaning++;
+                    break;
+                case INSPECTED:
+                    inspected++;
+                    break;
+                case READY:
+                    ready++;
+                    break;
+            }
+        }
+        System.out.println("\n--- STATUS DISTRIBUTION ---");
+        System.out.printf("  %-25s %d\n", "Dirty (Needs Cleaning):", dirty);
+        System.out.printf("  %-25s %d\n", "Cleaning In Progress:", cleaning);
+        System.out.printf("  %-25s %d\n", "Inspected:", inspected);
+        System.out.printf("  %-25s %d\n", "Ready for Check-In:", ready);
+    }
+
+    private int countRoomsByStatus(ListInterface<Room> rooms, HousekeepingStatus status) {
+        int count = 0;
+        for (int i = 0; i < rooms.size(); i++) {
+            if (rooms.get(i).getHousekeepingStatus() == status) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     private Room findRoom(int roomNumber) {
         for (int i = 0; i < rooms.size(); i++) {
-            Room r = rooms.get(i);
-            if (r.getRoomNumber() == roomNumber) {
-                return r;
+            Room room = rooms.get(i);
+            if (room.getRoomNumber() == roomNumber) {
+                return room;
             }
         }
         return null;
@@ -347,5 +575,39 @@ public class HousekeepingUI {
             }
         }
         return null;
+    }
+
+    private String getSortDescription(int choice) {
+        switch (choice) {
+            case 1:
+                return "Room Number (Ascending)";
+            case 2:
+                return "Room Number (Descending)";
+            case 3:
+                return "Status (Ascending)";
+            case 4:
+                return "Status (Descending)";
+            default:
+                return "Unknown";
+        }
+    }
+
+    private String getAuditSortDescription(int choice) {
+        switch (choice) {
+            case 1:
+                return "Timestamp (Newest First)";
+            case 2:
+                return "Timestamp (Oldest First)";
+            case 3:
+                return "Room Number (Ascending)";
+            default:
+                return "Unknown";
+        }
+    }
+
+    private String readStringWithSkip(String prompt) {
+        System.out.print(prompt);
+        String input = InputUtil.readString("");
+        return input.isEmpty() ? "" : input.trim();
     }
 }
