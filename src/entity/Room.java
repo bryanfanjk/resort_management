@@ -9,6 +9,8 @@ public class Room {
     private int capacity;
     private RoomType roomType;
     private RoomStatus status;
+    private HousekeepingStatus housekeepingStatus;
+    private String currentGuestConfirmation;
 
     
     public Room(int roomNumber, int capacity) {
@@ -20,6 +22,8 @@ public class Room {
         this.capacity = capacity;
         this.roomType = roomType;
         this.status = RoomStatus.AVAILABLE;
+        this.housekeepingStatus = HousekeepingStatus.READY;
+        this.currentGuestConfirmation = null;
     }
 
     public int getRoomNumber() {
@@ -50,11 +54,32 @@ public class Room {
         this.status = status;
     }
 
+    public HousekeepingStatus getHousekeepingStatus() {
+        return housekeepingStatus;
+    }
+
+    public void setHousekeepingStatus(HousekeepingStatus housekeepingStatus) {
+        this.housekeepingStatus = housekeepingStatus;
+    }
+
+    public boolean isVacant() {
+        return status == RoomStatus.AVAILABLE;
+    }
+
+    public String getCurrentGuestConfirmation() {
+        return currentGuestConfirmation;
+    }
+
+    public void setCurrentGuestConfirmation(String currentGuestConfirmation) {
+        this.currentGuestConfirmation = currentGuestConfirmation;
+    }
+
     @Override
     public String toString() {
         return "Room " + roomNumber +
                " | Type: " + roomType.getDisplayName() +
                " | Capacity: " + capacity +
-               " | Status: " + status.getDisplayName();
+               " | Status: " + status.getDisplayName() +
+               " | Housekeeping: " + housekeepingStatus.getLabel();
     }
 }

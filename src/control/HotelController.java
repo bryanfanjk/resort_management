@@ -82,6 +82,7 @@ public class HotelController {
         reservation.getCustomer().setCheckOutDate(checkOutDate);
         completedReservations.add(reservation);
         room.setStatus(RoomStatus.AVAILABLE);
+        room.setCurrentGuestConfirmation(null);
         return true;
     }
 
@@ -263,6 +264,7 @@ public class HotelController {
             WaitingCustomer customer, Room room,
             List<WaitingCustomer> skippedCustomers) {
         room.setStatus(RoomStatus.OCCUPIED);
+        room.setCurrentGuestConfirmation(customer.getCustomerName());
         Reservation reservation = new Reservation(customer, room,
                 customer.getRequestedRoomType());
         activeReservations.add(reservation);
@@ -279,6 +281,7 @@ public class HotelController {
         Reservation[] reservations = ApprovedReservationData.createNew(rooms);
         for (Reservation reservation : reservations) {
             reservation.getRoom().setStatus(RoomStatus.OCCUPIED);
+            reservation.getRoom().setCurrentGuestConfirmation(reservation.getCustomer().getCustomerName());
             activeReservations.add(reservation);
         }
     }
