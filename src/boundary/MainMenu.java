@@ -1,30 +1,22 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package boundary;
 
-import java.util.Scanner;
-import boundary.HotelCheckInUI;
-import boundary.HousekeepingUI;
-import util.IntegerReader;
-import control.HotelController;
-import control.HousekeepingController;
-import entity.Room;
-import entity.HousekeepingLog;
 import adt.LinkedStack;
 import adt.List;
 import adt.ListInterface;
+import control.AuthController;
+import control.HotelController;
+import control.HousekeepingController;
+import entity.HousekeepingLog;
+import entity.Room;
+import java.util.Scanner;
+import util.IntegerReader;
 
-/**
- *
- * @author NYO
- */
 public class MainMenu {
 
     private final Scanner scanner = new Scanner(System.in);
     private final HotelController hotelController = new HotelController();
     private final LinkedStack<HousekeepingLog> housekeepingStack = new LinkedStack<>();
+    private final AuthController authController = new AuthController();
     private final HousekeepingController housekeepingController;
     private final HotelCheckInUI checkInUI;
     private final HousekeepingUI housekeepingUI;
@@ -35,9 +27,14 @@ public class MainMenu {
         for (Room r : roomsArray) {
             roomsList.add(r);
         }
-        this.housekeepingController = new HousekeepingController(housekeepingStack, roomsList);
+        this.housekeepingController = new HousekeepingController(housekeepingStack,
+                roomsList,
+                authController);
         this.checkInUI = new HotelCheckInUI(hotelController);
-        this.housekeepingUI = new HousekeepingUI(housekeepingController, housekeepingStack, roomsList);
+        this.housekeepingUI = new HousekeepingUI(housekeepingController,
+                housekeepingStack,
+                roomsList,
+                authController);
     }
 
     public void menu() {
@@ -65,6 +62,7 @@ public class MainMenu {
                     break;
                 case 4:
                     System.out.println("\nNot Decided");
+                    break;
                 case 0:
                     System.out.println("\nSystem closed.");
                     break;
@@ -73,5 +71,4 @@ public class MainMenu {
             }
         } while (choice != 0);
     }
-
 }
