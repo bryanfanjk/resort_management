@@ -5,6 +5,7 @@ import control.HotelController;
 import entity.Room;
 import entity.RoomType;
 import entity.WaitingCustomer;
+import entity.Reservation;
 
 //author: Ng Yung Onn
 
@@ -303,5 +304,126 @@ public class GenReportVipUI {
             default:
                 return "Waiting Position";
         }
+    }
+    
+    
+        /*
+     * Report 3:
+     * Displays VIP customers who have already been served.
+     *
+     * checkedOutFilter:
+     * null  = active and checked-out VIP customers
+     * true  = checked-out VIP customers only
+     * false = active VIP customers only
+     *
+     * The reservations returned by getAllReservationsSorted()
+     * are already sorted by:
+     * 1. Check-in date
+     * 2. Room capacity
+     * 3. Nights stayed
+     */
+    public void displayVipReservationHistoryReport( RoomType roomTypeFilter,Boolean checkedOutFilter) {
+
+        List<Reservation> reservations =
+                controller.getAllReservationsSorted();
+
+        List<Reservation> vipReservations =
+                new List<>(Math.max(1, reservations.size()));
+
+        for (int index = 0;
+             index < reservations.size();
+             index++) {
+
+            Reservation reservation =
+                    reservations.get(index);
+
+            boolean isVip =
+                    reservation.getCustomer().getCustomerType()
+                    == entity.CustomerType.VIP;
+
+            boolean matchesRoomType =
+                    roomTypeFilter == null
+                    || reservation.getRoom().getRoomType()
+                    == roomTypeFilter;
+
+            boolean isCheckedOut =
+                    reservation.getCustomer().getCheckOutDate()
+                    != null;
+
+            boolean matchesStatus =
+                    checkedOutFilter == null
+                    || isCheckedOut == checkedOutFilter;
+
+            if (isVip && matchesRoomType && matchesStatus) {
+                vipReservations.add(reservation);
+            }
+        }
+
+        System.out.println("\n==============================================");
+        System.out.println("VIP Reservation History Report");
+        System.out.println("==============================================");
+        System.out.println("Room Type Filter: "
+                + getRoomFilterLabel(roomTypeFilter));
+        System.out.println("Status Filter: "
+                + getReservationStatusLabel(checkedOutFilter));
+        System.out.println(
+                "Sort By: Check-in Date -> Room Capacity -> Nights Stayed");
+        System.out.println("==============================================");
+
+        System.out.printf(
+                "%-20s %-8s %-15s %-15s %-12s %-12s %-10s%n",
+                "Customer Name",
+                "Pax",
+                "Check-in",
+                "Check-out",
+                "Nights",
+                "Room Type",
+                "Room");
+
+        System.out.println(
+                "--------------------------------------------------------------------------------");
+
+        for (int index = 0;
+             index < vipReservations.size();
+             index++) {
+
+            Reservation reservation =
+                    vipReservations.get(index);
+
+            System.out.printf(
+                    "%-20s %-8d %-15s %-15s %-12d %-12s %-10d%n",
+                    reservation.getCustomer().getCustomerName(),
+                    reservation.getCustomer().getPax(),
+                    reservation.getCustomer().getCheckInDate(),
+                    reservation.getCustomer().getCheckOutDate() == null
+                            ? "-"
+                            : reservation.getCustomer().getCheckOutDate(),
+                    reservation.getCustomer().getNightsStayed(),
+                    reservation.getRoom()
+                            .getRoomType()
+                            .getDisplayName(),
+                    reservation.getRoom().getRoomNumber());
+        }
+
+        System.out.println(
+                "--------------------------------------------------------------------------------");
+
+        if (vipReservations.isEmpty()) {
+            System.out.println(
+                    "No VIP reservations match the selected criteria.");
+        }
+    }
+    
+    private String getReservationStatusLabel(Boolean checkedOutFilter) {
+
+    if (checkedOutFilter == null) {
+        return "Active and Checked-out VIP Customers";
+    }
+
+    if (checkedOutFilter) {
+        return "Checked-out VIP Customers Only";
+    }
+
+    return "Active VIP Customers Only";
     }
 }

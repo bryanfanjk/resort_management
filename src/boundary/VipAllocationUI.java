@@ -26,9 +26,9 @@ public class VipAllocationUI {
             System.out.println("Module 2: VIP Priority Room Allocation");
             System.out.println("=======================================");
             System.out.println("1. VIP Customer Summary Report");
-            System.out.println(
-                    "2. VIP Demand vs. Room Availability Summary");
-            System.out.println("3. Back to Main Menu");
+            System.out.println("2. VIP Demand vs. Room Availability Summary");
+            System.out.println("3. VIP Reservation History Report");
+            System.out.println("4. Back to Main Menu");
             System.out.print("Enter your choice: ");
 
             choice = IntegerReader.readInteger();
@@ -41,15 +41,118 @@ public class VipAllocationUI {
                 case 2:
                     reportUI.displayVipDemandAvailabilityReport();
                     break;
-
+ 
                 case 3:
+                    viewVipReservationHistoryReport();
+                    break;
+                   
+                case 4:
                     break;
 
                 default:
                     System.out.println("\nInvalid choice.");
             }
 
-        } while (choice != 3);
+        } while (choice != 4);
+    }
+    
+    private RoomType readReservationRoomTypeFilter() {
+        filterExitSelected = false;
+
+        while (true) {
+            System.out.println(
+                    "\nFilter VIP reservations by room type:");
+
+            System.out.println("1. Deluxe");
+            System.out.println("2. Premium");
+            System.out.println("3. Platinum");
+            System.out.println("4. All Room Types");
+            System.out.println("5. Back");
+            System.out.print("Enter your choice: ");
+
+            int choice =
+                    IntegerReader.readInteger();
+
+            switch (choice) {
+                case 1:
+                    return RoomType.DELUXE;
+
+                case 2:
+                    return RoomType.PREMIUM;
+
+                case 3:
+                    return RoomType.PLATINUM;
+
+                case 4:
+                    return null;
+
+                case 5:
+                    filterExitSelected = true;
+                    return null;
+
+                default:
+                    System.out.println(
+                            "Please choose 1, 2, 3, 4, or 5.");
+            }
+        }
+    }
+    
+    private Boolean readReservationStatusFilter() {
+    filterExitSelected = false;
+
+    while (true) {
+        System.out.println(
+                "\nFilter VIP reservations by customer status:");
+
+        System.out.println("1. All VIP Customers");
+        System.out.println("2. Active VIP Customers");
+        System.out.println("3. Checked-out VIP Customers");
+        System.out.println("4. Back");
+        System.out.print("Enter your choice: ");
+
+        int choice =
+                IntegerReader.readInteger();
+
+        switch (choice) {
+            case 1:
+                return null;
+
+            case 2:
+                return false;
+
+            case 3:
+                return true;
+
+            case 4:
+                filterExitSelected = true;
+                return null;
+
+            default:
+                System.out.println(
+                        "Please choose 1, 2, 3, or 4.");
+            }
+        }
+    }
+    
+    private void viewVipReservationHistoryReport() {
+    RoomType roomTypeFilter =
+            readReservationRoomTypeFilter();
+
+    if (filterExitSelected) {
+        return;
+    }
+
+    Boolean checkedOutFilter =
+            readReservationStatusFilter();
+
+    if (checkedOutFilter == null
+            && filterExitSelected) {
+        return;
+    }
+
+    reportUI.displayVipReservationHistoryReport(
+            roomTypeFilter,
+            checkedOutFilter);
     }
 
     private void viewVipCustomerReport() {
