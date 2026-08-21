@@ -7,6 +7,7 @@ package boundary;
 import java.util.Scanner;
 import control.FrontDeskControl;
 import dao.RoomData;
+import entity.CustomerType;
 import entity.GuestBillingInfo;
 import entity.Room;
 
@@ -52,7 +53,7 @@ public class FrontDeskUI {
             System.out.println("2. Query Room Availability");
             System.out.println("3. View Billing Details");
             System.out.println("4. Guest Information Retrieval Report (All / Filtered)");
-            System.out.println("5. Room Availability Summary Report");
+            System.out.println("5. Financial Report (Daily Revenue)");
             System.out.println("6. Back to Main Menu");
             System.out.print("Enter your choice: ");
 
@@ -77,7 +78,7 @@ public class FrontDeskUI {
                     handleGuestInformationReport();
                     break;
                 case 5:
-                    handleRoomAvailabilitySummaryReport(this.rooms);
+                    handleFinancialReport(this.rooms);
                     break;
                 case 6:
                     System.out.println("Returning to Main Menu...");
@@ -131,6 +132,7 @@ public class FrontDeskUI {
             System.out.println("---------------------------------");
             System.out.println("Confirmation Number: " + guestInfo.getConfirmationNumber());
             System.out.println("Customer Name      : " + (guestInfo.getCustomer() != null ? guestInfo.getCustomer().getCustomerName() : "N/A"));
+            System.out.println("Customer Tier      : " + (guestInfo.getCustomer() != null && guestInfo.getCustomer().getCustomerType() == CustomerType.VIP ? "VIP" : "Standard"));
             System.out.println("Nights Stayed      : " + (guestInfo.getCustomer() != null ? guestInfo.getCustomer().getNightsStayed() : 0));
             System.out.println("Daily Room Rate    : $" + String.format("%.2f", guestInfo.getDailyRoomRate()));
             System.out.println("Total Amount Due   : $" + String.format("%.2f", guestInfo.getTotalBillAmount()));
@@ -144,8 +146,9 @@ public class FrontDeskUI {
         System.out.println("\n--- Guest Information Retrieval Report ---");
         System.out.println("1. Show ALL Guests");
         System.out.println("2. Filter Guests by Check-in Date");
-        System.out.println("3. Back to Front-Desk Service Menu");
-        System.out.print("Enter choice (1-3): ");
+        System.out.println("3. Filter VIP Guests");
+        System.out.println("4. Back to Front-Desk Service Menu");
+        System.out.print("Enter choice (1-4): ");
         String subChoice = scanner.nextLine().trim();
 
         GuestBillingInfo[] guests;
@@ -159,9 +162,12 @@ public class FrontDeskUI {
             guests = control.getFilteredGuestsByCheckIn(dateInput);
             System.out.println("\n[ REPORT: Guests Checking In On " + dateInput + " ]");
         } else if ("3".equals(subChoice)) {
+            guests = control.getFilteredVipGuests();
+            System.out.println("\n[ REPORT: VIP Guests Only ]");
+        } else if ("4".equals(subChoice)) {
             return;
         } else {
-            System.out.println("Invalid choice. Please enter 1, 2, or 3.");
+            System.out.println("Invalid choice. Please enter 1, 2, 3, or 4.");
             return;
         }
 
@@ -170,34 +176,37 @@ public class FrontDeskUI {
             return;
         }
 
-        System.out.println("=========================================================================================");
-        System.out.printf("%-12s %-18s %-5s %-12s %-12s %-10s %-12s%n",
-                "Conf No.", "Guest Name", "Pax", "Check-In", "Check-Out", "Room No.", "Total Bill");
-        System.out.println("-----------------------------------------------------------------------------------------");
+        System.out.println("=========================================================================================================");
+        System.out.printf("%-12s %-18s %-10s %-5s %-12s %-12s %-10s %-12s %-12s%n",
+                "Conf No.", "Guest Name", "Tier", "Pax", "Check-In", "Check-Out", "Room No.", "Daily Rate", "Total Bill");
+        System.out.println("---------------------------------------------------------------------------------------------------------");
 
         for (GuestBillingInfo g : guests) {
             String roomStr = (g.getRoom() != null) ? String.valueOf(g.getRoom().getRoomNumber()) : "Waiting";
             String name = (g.getCustomer() != null) ? g.getCustomer().getCustomerName() : "N/A";
+            String tier = (g.getCustomer() != null && g.getCustomer().getCustomerType() == CustomerType.VIP) ? "VIP" : "Standard";
             int pax = (g.getCustomer() != null) ? g.getCustomer().getPax() : 0;
             String checkIn = (g.getCustomer() != null) ? g.getCustomer().getCheckInDate() : "N/A";
             String checkOut = (g.getCustomer() != null && g.getCustomer().getCheckOutDate() != null) ? g.getCustomer().getCheckOutDate() : "-";
 
-            System.out.printf("%-12s %-18s %-5d %-12s %-12s %-10s $%-11.2f%n",
+            System.out.printf("%-12s %-18s %-10s %-5d %-12s %-12s %-10s $%-11.2f $%-11.2f%n",
                     g.getConfirmationNumber(),
                     name,
+                    tier,
                     pax,
                     checkIn,
                     checkOut,
                     roomStr,
+                    g.getDailyRoomRate(),
                     g.getTotalBillAmount());
         }
-        System.out.println("-----------------------------------------------------------------------------------------");
+        System.out.println("---------------------------------------------------------------------------------------------------------");
         System.out.println("Total Records: " + guests.length);
-        System.out.println("=========================================================================================");
+        System.out.println("=========================================================================================================");
     }
 
-    private void handleRoomAvailabilitySummaryReport(Room[] rooms) {
-        String report = control.generateRoomAvailabilitySummaryReport(rooms);
+    private void handleFinancialReport(Room[] rooms) {
+        String report = control.generateFinancialReport(rooms);
         System.out.println(report);
     }
 }

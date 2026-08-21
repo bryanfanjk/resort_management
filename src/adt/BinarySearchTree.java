@@ -1,8 +1,5 @@
 /*
- * Author: Antigravity
- * 
  * Non-Linear ADT: Binary Search Tree (BST)
- * Adapted from standard Data Structures and Algorithms Binary Search Tree concepts.
  */
 package adt;
 

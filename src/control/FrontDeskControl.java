@@ -10,6 +10,7 @@ import dao.CheckedOutReservationData;
 import dao.RoomData;
 import dao.StandardWaitingCustomerData;
 import dao.VipWaitingCustomerData;
+import entity.CustomerType;
 import entity.GuestBillingInfo;
 import entity.Reservation;
 import entity.Room;
@@ -212,41 +213,133 @@ public class FrontDeskControl {
     }
 
     /**
-     * Generates Room Availability Summary Report showing room breakdown and statistics.
+     * Retrieves guests filtered by VIP customer type.
      */
-    public String generateRoomAvailabilitySummaryReport(Room[] rooms) {
-        if (rooms == null || rooms.length == 0) {
-            return "No room data available.";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("\n========================================================\n");
-        sb.append("             ROOM AVAILABILITY SUMMARY REPORT           \n");
-        sb.append("========================================================\n");
-        sb.append(String.format("%-12s %-12s %-15s%n", "Room Number", "Capacity", "Status"));
-        sb.append("--------------------------------------------------------\n");
-
-        int availableCount = 0;
-        int occupiedCount = 0;
-        for (Room r : rooms) {
-            if (r != null) {
-                boolean isAvail = r.isAvailable();
-                String status = isAvail ? "AVAILABLE" : "OCCUPIED";
-                if (isAvail) availableCount++;
-                else occupiedCount++;
-                sb.append(String.format("%-12d %-12d %-15s%n", r.getRoomNumber(), r.getCapacity(), status));
+    public GuestBillingInfo[] getFilteredVipGuests() {
+        GuestBillingInfo[] all = getAllGuests();
+        int count = 0;
+        for (GuestBillingInfo g : all) {
+            if (g != null && g.getCustomer() != null && g.getCustomer().getCustomerType() == CustomerType.VIP) {
+                count++;
             }
         }
 
-        int totalRooms = rooms.length;
-        double occupancyRate = totalRooms > 0 ? ((double) occupiedCount / totalRooms) * 100 : 0.0;
+        GuestBillingInfo[] filtered = new GuestBillingInfo[count];
+        int index = 0;
+        for (GuestBillingInfo g : all) {
+            if (g != null && g.getCustomer() != null && g.getCustomer().getCustomerType() == CustomerType.VIP) {
+                filtered[index++] = g;
+            }
+        }
+        return filtered;
+    }
 
-        sb.append("--------------------------------------------------------\n");
-        sb.append(String.format("Total Rooms      : %d%n", totalRooms));
-        sb.append(String.format("Available Rooms  : %d%n", availableCount));
-        sb.append(String.format("Occupied Rooms   : %d%n", occupiedCount));
-        sb.append(String.format("Occupancy Rate   : %.1f%%%n", occupancyRate));
-        sb.append("========================================================\n");
+    /**
+     * Generates a comprehensive Financial Report with Daily Revenue calculations.
+     */
+    public String generateFinancialReport(Room[] rooms) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n========================================================================\n");
+        sb.append("                 FINANCIAL REPORT - DAILY REVENUE & BILLING             \n");
+        sb.append("========================================================================\n");
+
+        // 1. Daily Room Revenue Breakdown by Category
+        int deluxeOccupied = 0, deluxeTotal = 0;
+        int premiumOccupied = 0, premiumTotal = 0;
+        int platinumOccupied = 0, platinumTotal = 0;
+
+        if (rooms != null) {
+            for (Room r : rooms) {
+                if (r != null && r.getRoomType() != null) {
+                    boolean isOcc = !r.isAvailable();
+                    switch (r.getRoomType()) {
+                        case DELUXE:
+                            deluxeTotal++;
+                            if (isOcc) deluxeOccupied++;
+                            break;
+                        case PREMIUM:
+                            premiumTotal++;
+                            if (isOcc) premiumOccupied++;
+                            break;
+                        case PLATINUM:
+                            platinumTotal++;
+                            if (isOcc) platinumOccupied++;
+                            break;
+                    }
+                }
+            }
+        }
+
+        double deluxeDailyRate = getDailyRate(RoomType.DELUXE);
+        double premiumDailyRate = getDailyRate(RoomType.PREMIUM);
+        double platinumDailyRate = getDailyRate(RoomType.PLATINUM);
+
+        double deluxeDailyRev = deluxeOccupied * deluxeDailyRate;
+        double premiumDailyRev = premiumOccupied * premiumDailyRate;
+        double platinumDailyRev = platinumOccupied * platinumDailyRate;
+        double totalDailyRevenue = deluxeDailyRev + premiumDailyRev + platinumDailyRev;
+
+        sb.append("[ 1. DAILY ROOM REVENUE BREAKDOWN ]\n");
+        sb.append(String.format("%-15s %-12s %-15s %-15s %-15s%n",
+                "Room Type", "Daily Rate", "Occupied/Total", "Occupancy %", "Daily Revenue"));
+        sb.append("------------------------------------------------------------------------\n");
+        sb.append(String.format("%-15s $%-11.2f %-15s %-14.1f%% $%-14.2f%n",
+                "Deluxe", deluxeDailyRate, deluxeOccupied + "/" + deluxeTotal,
+                deluxeTotal > 0 ? ((double) deluxeOccupied / deluxeTotal) * 100 : 0.0, deluxeDailyRev));
+        sb.append(String.format("%-15s $%-11.2f %-15s %-14.1f%% $%-14.2f%n",
+                "Premium", premiumDailyRate, premiumOccupied + "/" + premiumTotal,
+                premiumTotal > 0 ? ((double) premiumOccupied / premiumTotal) * 100 : 0.0, premiumDailyRev));
+        sb.append(String.format("%-15s $%-11.2f %-15s %-14.1f%% $%-14.2f%n",
+                "Platinum", platinumDailyRate, platinumOccupied + "/" + platinumTotal,
+                platinumTotal > 0 ? ((double) platinumOccupied / platinumTotal) * 100 : 0.0, platinumDailyRev));
+        sb.append("------------------------------------------------------------------------\n");
+        sb.append(String.format("%-45s Total Daily Revenue: $%.2f%n%n", "", totalDailyRevenue));
+
+        // 2. Revenue Distribution by Customer Type
+        GuestBillingInfo[] allGuests = getAllGuests();
+        int vipCount = 0, standardCount = 0;
+        double vipTotalBilled = 0.0, standardTotalBilled = 0.0;
+
+        for (GuestBillingInfo g : allGuests) {
+            if (g != null && g.getCustomer() != null) {
+                if (g.getCustomer().getCustomerType() == CustomerType.VIP) {
+                    vipCount++;
+                    vipTotalBilled += g.getTotalBillAmount();
+                } else {
+                    standardCount++;
+                    standardTotalBilled += g.getTotalBillAmount();
+                }
+            }
+        }
+
+        double totalCumulativeBilled = vipTotalBilled + standardTotalBilled;
+
+        sb.append("[ 2. CUSTOMER TYPE REVENUE DISTRIBUTION ]\n");
+        sb.append(String.format("%-18s %-15s %-20s %-15s%n",
+                "Customer Tier", "Total Guests", "Total Billed Revenue", "Share %"));
+        sb.append("------------------------------------------------------------------------\n");
+        sb.append(String.format("%-18s %-15d $%-19.2f %-14.1f%%%n",
+                "VIP Guests", vipCount, vipTotalBilled,
+                totalCumulativeBilled > 0 ? (vipTotalBilled / totalCumulativeBilled) * 100 : 0.0));
+        sb.append(String.format("%-18s %-15d $%-19.2f %-14.1f%%%n",
+                "Standard Guests", standardCount, standardTotalBilled,
+                totalCumulativeBilled > 0 ? (standardTotalBilled / totalCumulativeBilled) * 100 : 0.0));
+        sb.append("------------------------------------------------------------------------\n");
+        sb.append(String.format("%-34s Total Billed Revenue: $%.2f%n%n", "", totalCumulativeBilled));
+
+        // 3. Summary Performance Metrics
+        int totalOccupiedRooms = deluxeOccupied + premiumOccupied + platinumOccupied;
+        int totalRooms = deluxeTotal + premiumTotal + platinumTotal;
+        double overallOccupancy = totalRooms > 0 ? ((double) totalOccupiedRooms / totalRooms) * 100 : 0.0;
+        double avgRevPerGuest = allGuests.length > 0 ? totalCumulativeBilled / allGuests.length : 0.0;
+
+        sb.append("[ 3. RESORT FINANCIAL PERFORMANCE SUMMARY ]\n");
+        sb.append(String.format("• Current Active Daily Room Revenue : $%.2f%n", totalDailyRevenue));
+        sb.append(String.format("• Total Cumulative Resort Billings : $%.2f%n", totalCumulativeBilled));
+        sb.append(String.format("• Overall Resort Room Occupancy    : %d / %d (%.1f%%)%n", totalOccupiedRooms, totalRooms, overallOccupancy));
+        sb.append(String.format("• Total Registered Guests in System: %d guests%n", allGuests.length));
+        sb.append(String.format("• Average Billed Revenue Per Guest : $%.2f%n", avgRevPerGuest));
+        sb.append("========================================================================\n");
 
         return sb.toString();
     }
