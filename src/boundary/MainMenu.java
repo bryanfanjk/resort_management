@@ -9,6 +9,7 @@ import control.HousekeepingController;
 import entity.HousekeepingLog;
 import entity.Room;
 import java.util.Scanner;
+import control.HotelController;
 import util.IntegerReader;
 
 public class MainMenu {
@@ -45,14 +46,14 @@ public class MainMenu {
             System.out.println("1. Module 1 Walk-In Registrations & Standard Booking Procedure");
             System.out.println("2. Module 2 VIP & Loyalty Tier Priority Room Allocation");
             System.out.println("3. Module 3 Housekeeping and Task Log");
-            System.out.println("4. Module 4 ???");
+            System.out.println("4. Module 4 Front-Desk Service & Billing");
             System.out.println("0. Exit");
             System.out.print("Enter your choice: ");
             choice = IntegerReader.readInteger();
 
             switch (choice) {
                 case 1:
-                    checkInUI.start();
+                    new HotelCheckInUI(hotelController).start();
                     break;
                 case 2:
                     System.out.println("\nintegrated in module 1");
@@ -61,7 +62,7 @@ public class MainMenu {
                     housekeepingUI.start();
                     break;
                 case 4:
-                    System.out.println("\nNot Decided");
+                    new FrontDeskUI(hotelController.getFrontDeskControl(), hotelController.getRooms()).displayFrontDeskMenu(hotelController.getRooms());
                     break;
                 case 0:
                     System.out.println("\nSystem closed.");

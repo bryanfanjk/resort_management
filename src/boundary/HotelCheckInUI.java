@@ -21,13 +21,12 @@ public class HotelCheckInUI {
     private final GenerateReportUI reportUI;
 
     public HotelCheckInUI() {
-        this.controller = new HotelController();
-        this.reportUI = new GenerateReportUI(controller);
+        this(new HotelController());
     }
 
     public HotelCheckInUI(HotelController controller) {
-        this.controller = controller;
-        this.reportUI = new GenerateReportUI(controller);
+        this.controller = controller != null ? controller : new HotelController();
+        this.reportUI = new GenerateReportUI(this.controller);
     }
 
     public void start() {
@@ -88,10 +87,11 @@ public class HotelCheckInUI {
 
             System.out.println(
             "\nVIP customer added to the VIP waiting list.");
-    }   else {
+        } else {
             System.out.println(
                 "\nStandard customer added to the standard waiting list.");
-    }
+        }
+        System.out.println("Confirmation Number: " + waitingCustomer.getConfirmationNumber());
     }
 
     private void checkOut() {

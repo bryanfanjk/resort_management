@@ -10,7 +10,9 @@ public class WaitingCustomer extends Customer {
     public WaitingCustomer(Customer customer, RoomType requestedRoomType,
                            int waitingPosition) {
         super(customer.getCustomerName(), customer.getPax(),
-                customer.getCheckInDate(), customer.getNightsStayed(), customer.getCustomerType());
+                customer.getCheckInDate(), customer.getCheckOutDate(),
+                customer.getNightsStayed(), customer.getCustomerType(),
+                customer.getConfirmationNumber());
         this.requestedRoomType = requestedRoomType;
         this.waitingPosition = waitingPosition;
     }
