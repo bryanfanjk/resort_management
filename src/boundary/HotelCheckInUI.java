@@ -17,8 +17,17 @@ import entity.CustomerType;
 public class HotelCheckInUI {
 
     private final Scanner scanner = new Scanner(System.in);
-    private final HotelController controller = new HotelController();
-    private final GenerateReportUI reportUI = new GenerateReportUI(controller);
+    private final HotelController controller;
+    private final GenerateReportUI reportUI;
+
+    public HotelCheckInUI() {
+        this(new HotelController());
+    }
+
+    public HotelCheckInUI(HotelController controller) {
+        this.controller = controller != null ? controller : new HotelController();
+        this.reportUI = new GenerateReportUI(this.controller);
+    }
 
     public void start() {
         int choice;
@@ -78,10 +87,11 @@ public class HotelCheckInUI {
 
             System.out.println(
             "\nVIP customer added to the VIP waiting list.");
-    }   else {
+        } else {
             System.out.println(
                 "\nStandard customer added to the standard waiting list.");
-    }
+        }
+        System.out.println("Confirmation Number: " + waitingCustomer.getConfirmationNumber());
     }
 
     private void checkOut() {

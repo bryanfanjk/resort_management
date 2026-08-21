@@ -11,6 +11,7 @@ import dao.VipWaitingCustomerData;
 import entity.AssignmentResult;
 import entity.Customer;
 import entity.CustomerType;
+import entity.GuestBillingInfo;
 import entity.Reservation;
 import entity.Room;
 import entity.RoomStatus;
@@ -25,19 +26,25 @@ public class HotelController {
     private final List<WaitingCustomer> waitingCustomers = new List<>(100);
     private final List<Reservation> activeReservations = new List<>(100);
     private final List<Reservation> completedReservations = new List<>(100);
-    private final VipAllocationController vipController
-        = new VipAllocationController();
+    private final VipAllocationController vipController = new VipAllocationController();
+    private final FrontDeskControl frontDeskControl;
+    private int confirmationCounter = 1;
 
     public HotelController() {
         this(RoomData.createRooms());
-        loadApprovedReservations();
-        loadCheckedOutReservations();
-        loadStandardWaitingCustomers();
-        loadVipWaitingCustomers();
     }
 
     public HotelController(Room[] rooms) {
         this.rooms = rooms;
+        this.frontDeskControl = new FrontDeskControl(this.rooms);
+        loadApprovedReservations();
+        loadCheckedOutReservations();
+        loadVipWaitingCustomers();
+        loadStandardWaitingCustomers();
+    }
+
+    public FrontDeskControl getFrontDeskControl() {
+        return frontDeskControl;
     }
 
     /* author: Fan Jin Kit & Ng Yung Onn*/
@@ -52,14 +59,17 @@ public class HotelController {
     public WaitingCustomer addWalkInReservation(Customer customer,
                                                  RoomType requestedRoomType) {
         return addWalkInReservation(customer, requestedRoomType, null);
-        }
+    }
 
-        public WaitingCustomer addWalkInReservation(Customer customer,
-                             RoomType requestedRoomType,
-                             String vipCode) {
+    public WaitingCustomer addWalkInReservation(Customer customer,
+                         RoomType requestedRoomType,
+                         String vipCode) {
         CustomerType customerType = vipController.isValidVipCode(vipCode)
             ? CustomerType.VIP : CustomerType.STANDARD;
         customer.setCustomerType(customerType);
+
+        String confCode = String.format("CONF%04d", confirmationCounter++);
+        customer.setConfirmationNumber(confCode);
 
         WaitingCustomer waitingCustomer = new WaitingCustomer(customer,
             requestedRoomType, getTotalWaitingCount() + 1);
@@ -68,6 +78,11 @@ public class HotelController {
         } else {
             waitingCustomers.add(waitingCustomer);
         }
+
+        double rate = FrontDeskControl.getDailyRate(requestedRoomType);
+        GuestBillingInfo guestInfo = new GuestBillingInfo(confCode, customer, null, rate);
+        frontDeskControl.registerGuestInfo(guestInfo);
+
         return waitingCustomer;
     }
     
@@ -86,6 +101,9 @@ public class HotelController {
         reservation.getCustomer().setCheckOutDate(checkOutDate);
         completedReservations.add(reservation);
         room.setStatus(RoomStatus.AVAILABLE);
+        room.setCurrentGuestConfirmation(null);
+
+        frontDeskControl.updateGuestCheckout(reservation.getConfirmationNumber(), checkOutDate);
         return true;
     }
 
@@ -100,10 +118,9 @@ public class HotelController {
             Room room = findAvailableRoom(waitingCustomer.getPax(),
                 waitingCustomer.getRequestedRoomType());
             if (room != null) {
-            vipController.removeVip(index);
-            resequenceVipWaitingPositions();
-            return approveCustomer(waitingCustomer, room,
-                skippedCustomers);
+                vipController.removeVip(index);
+                resequenceVipWaitingPositions();
+                return approveCustomer(waitingCustomer, room, skippedCustomers);
             }
             skippedCustomers.add(waitingCustomer);
         }
@@ -120,7 +137,7 @@ public class HotelController {
 
             waitingCustomers.remove(index);
             resequenceWaitingPositions();
-                return approveCustomer(waitingCustomer, room, skippedCustomers);
+            return approveCustomer(waitingCustomer, room, skippedCustomers);
         }
         return new AssignmentResult(skippedCustomers, null);
     }
@@ -283,9 +300,13 @@ public class HotelController {
             WaitingCustomer customer, Room room,
             List<WaitingCustomer> skippedCustomers) {
         room.setStatus(RoomStatus.OCCUPIED);
+        room.setCurrentGuestConfirmation(customer.getCustomerName());
         Reservation reservation = new Reservation(customer, room,
-                customer.getRequestedRoomType());
+                customer.getRequestedRoomType(), customer.getConfirmationNumber());
         activeReservations.add(reservation);
+
+        frontDeskControl.updateGuestRoomAssignment(customer.getConfirmationNumber(), room);
+
         return new AssignmentResult(skippedCustomers, reservation);
     }
     
@@ -300,8 +321,18 @@ public class HotelController {
     private void loadApprovedReservations() {
         Reservation[] reservations = ApprovedReservationData.createNew(rooms);
         for (Reservation reservation : reservations) {
+            String confCode = String.format("CONF%04d", confirmationCounter++);
+            reservation.setConfirmationNumber(confCode);
+            if (reservation.getCustomer() != null) {
+                reservation.getCustomer().setConfirmationNumber(confCode);
+            }
             reservation.getRoom().setStatus(RoomStatus.OCCUPIED);
+            reservation.getRoom().setCurrentGuestConfirmation(reservation.getCustomer().getCustomerName());
             activeReservations.add(reservation);
+
+            double rate = FrontDeskControl.getDailyRate(reservation.getRoom().getRoomType());
+            GuestBillingInfo guestInfo = new GuestBillingInfo(confCode, reservation.getCustomer(), reservation.getRoom(), rate);
+            frontDeskControl.registerGuestInfo(guestInfo);
         }
     }
     
@@ -309,6 +340,11 @@ public class HotelController {
     private void loadCheckedOutReservations() {
         Reservation[] reservations = CheckedOutReservationData.createNew(rooms);
         for (Reservation reservation : reservations) {
+            String confCode = String.format("CONF%04d", confirmationCounter++);
+            reservation.setConfirmationNumber(confCode);
+            if (reservation.getCustomer() != null) {
+                reservation.getCustomer().setConfirmationNumber(confCode);
+            }
             completedReservations.add(reservation);
         }
     }
@@ -319,6 +355,10 @@ public class HotelController {
         for (int index = 0; index < customers.length; index++) {
             customers[index].setWaitingPosition(index + 1);
             waitingCustomers.add(customers[index]);
+
+            double rate = FrontDeskControl.getDailyRate(reservation.getRoom().getRoomType());
+            GuestBillingInfo guestInfo = new GuestBillingInfo(confCode, reservation.getCustomer(), reservation.getRoom(), rate);
+            frontDeskControl.registerGuestInfo(guestInfo);
         }
     }
     
@@ -326,8 +366,28 @@ public class HotelController {
     private void loadVipWaitingCustomers() {
         WaitingCustomer[] customers = VipWaitingCustomerData.createNew();
         for (int index = 0; index < customers.length; index++) {
+            String confCode = String.format("CONF%04d", confirmationCounter++);
+            customers[index].setConfirmationNumber(confCode);
             customers[index].setWaitingPosition(index + 1);
             vipController.addVip(customers[index]);
+
+            double rate = FrontDeskControl.getDailyRate(customers[index].getRequestedRoomType());
+            GuestBillingInfo guestInfo = new GuestBillingInfo(confCode, customers[index], null, rate);
+            frontDeskControl.registerGuestInfo(guestInfo);
+        }
+    }
+
+    private void loadStandardWaitingCustomers() {
+        WaitingCustomer[] customers = StandardWaitingCustomerData.createNew();
+        for (int index = 0; index < customers.length; index++) {
+            String confCode = String.format("CONF%04d", confirmationCounter++);
+            customers[index].setConfirmationNumber(confCode);
+            customers[index].setWaitingPosition(index + 1);
+            waitingCustomers.add(customers[index]);
+
+            double rate = FrontDeskControl.getDailyRate(customers[index].getRequestedRoomType());
+            GuestBillingInfo guestInfo = new GuestBillingInfo(confCode, customers[index], null, rate);
+            frontDeskControl.registerGuestInfo(guestInfo);
         }
     }
 }
