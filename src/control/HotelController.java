@@ -19,6 +19,7 @@ import entity.RoomType;
 import entity.WaitingCustomer;
 
 /** Coordinates check-in, checkout, and list-based waiting-customer assignment. */
+/* author: Fan Jin Kit & Ng Yung Onn */
 public class HotelController {
 
     private final Room[] rooms;
@@ -46,13 +47,15 @@ public class HotelController {
         return frontDeskControl;
     }
 
+    /* author: Fan Jin Kit & Ng Yung Onn*/
     public boolean customerExists(String name) {
         return containsReservationCustomer(activeReservations, name)
                 || containsReservationCustomer(completedReservations, name)
                 || containsWaitingCustomer(name)
                 || containsVipWaitingCustomer(name);
     }
-
+    
+    /* author: Fan Jin Kit & Ng Yung Onn*/
     public WaitingCustomer addWalkInReservation(Customer customer,
                                                  RoomType requestedRoomType) {
         return addWalkInReservation(customer, requestedRoomType, null);
@@ -82,7 +85,8 @@ public class HotelController {
 
         return waitingCustomer;
     }
-
+    
+    /* author: Fan Jin Kit */
     /** Completes checkout and records the reservation in history. */
     public boolean checkOut(int roomNumber, String checkOutDate) {
         Room room = findRoom(roomNumber);
@@ -103,6 +107,7 @@ public class HotelController {
         return true;
     }
 
+    /* author: Fan Jin Kit & Ng Yung Onn*/
     /* Scans waiting customers in waiting-position order. Stops immediately after assigning one customer. */
     public AssignmentResult allocateRoom() {
         List<WaitingCustomer> skippedCustomers = new List<>(
@@ -136,7 +141,8 @@ public class HotelController {
         }
         return new AssignmentResult(skippedCustomers, null);
     }
-
+    
+    /* author: Fan Jin Kit */
     public Room findAvailableRoom(int pax, RoomType roomType) {
         for (Room room : rooms) {
             if (room != null && room.getStatus() == RoomStatus.AVAILABLE
@@ -147,15 +153,18 @@ public class HotelController {
         }
         return null;
     }
-
+    
+    /* author: Fan Jin Kit */
     public int getWaitingCount() {
         return getTotalWaitingCount();
     }
-
+    
+    /* author: Ng Yung Onn */
     public Room[] getRooms() {
         return rooms.clone();
     }
-
+    
+    /* author: Fan Jin Kit */
     /**
      * Returns active and checked-out reservations, ordered by check-in date,
      * then room capacity, then nights stayed.
@@ -183,11 +192,13 @@ public class HotelController {
         }
         return sortedReservations;
     }
-
+    
+    /* author: Fan Jin Kit */
     public List<WaitingCustomer> getWaitingCustomers() {
         return waitingCustomers;
     }
-
+    
+    /* author: Ng Yung Onn */
     public adt.VipList<WaitingCustomer> getVipWaitingCustomers() {
         return vipController.getVipList();
     }
@@ -200,7 +211,8 @@ public class HotelController {
         }
         return null;
     }
-
+    
+    /* author: Fan Jin Kit */
     private Reservation removeReservationForRoom(int roomNumber) {
         for (int i = 0; i < activeReservations.size(); i++) {
             Reservation reservation = activeReservations.get(i);
@@ -211,19 +223,22 @@ public class HotelController {
         }
         return null;
     }
-
+    
+    /* author: Fan Jin Kit */
     private void resequenceWaitingPositions() {
         for (int index = 0; index < waitingCustomers.size(); index++) {
             waitingCustomers.get(index).setWaitingPosition(index + 1);
         }
     }
-
+    
+    /* author: Fan Jin Kit */
     private void addAll(List<Reservation> destination, List<Reservation> source) {
         for (int i = 0; i < source.size(); i++) {
             destination.add(source.get(i));
         }
     }
-
+    
+    /* author: Fan Jin Kit */
     private int compareReservations(Reservation first, Reservation second) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         int dateComparison = LocalDate.parse(first.getCustomer().getCheckInDate(),
@@ -241,7 +256,8 @@ public class HotelController {
         return Integer.compare(first.getCustomer().getNightsStayed(),
                 second.getCustomer().getNightsStayed());
     }
-
+    
+    /* author: Fan Jin Kit */
     private boolean containsReservationCustomer(List<Reservation> source,
                                                 String name) {
         for (int i = 0; i < source.size(); i++) {
@@ -252,7 +268,8 @@ public class HotelController {
         }
         return false;
     }
-
+    
+    /* author: Fan Jin Kit */
     private boolean containsWaitingCustomer(String name) {
         for (int i = 0; i < waitingCustomers.size(); i++) {
             if (waitingCustomers.get(i).getCustomerName().equalsIgnoreCase(name)) {
@@ -261,7 +278,8 @@ public class HotelController {
         }
         return false;
     }
-
+    
+    /* author: Ng Yung Onn */
     private boolean containsVipWaitingCustomer(String name) {
         for (int index = 0; index < vipController.waitingVipCount(); index++) {
             if (vipController.getVip(index).getCustomerName()
@@ -271,11 +289,13 @@ public class HotelController {
         }
         return false;
     }
-
+    
+    /* author: Ng Yung Onn*/
     private int getTotalWaitingCount() {
         return waitingCustomers.size() + vipController.waitingVipCount();
     }
-
+    
+    /* author: Fan Jin Kit*/
     private AssignmentResult approveCustomer(
             WaitingCustomer customer, Room room,
             List<WaitingCustomer> skippedCustomers) {
@@ -289,13 +309,15 @@ public class HotelController {
 
         return new AssignmentResult(skippedCustomers, reservation);
     }
-
+    
+    /* author: Ng Yung Onn*/
     private void resequenceVipWaitingPositions() {
         for (int index = 0; index < vipController.waitingVipCount(); index++) {
             vipController.getVip(index).setWaitingPosition(index + 1);
         }
     }
 
+    /* author: Ng Yung Onn*/
     private void loadApprovedReservations() {
         Reservation[] reservations = ApprovedReservationData.createNew(rooms);
         for (Reservation reservation : reservations) {
@@ -313,7 +335,8 @@ public class HotelController {
             frontDeskControl.registerGuestInfo(guestInfo);
         }
     }
-
+    
+    /* author: Fan Jin Kit */
     private void loadCheckedOutReservations() {
         Reservation[] reservations = CheckedOutReservationData.createNew(rooms);
         for (Reservation reservation : reservations) {
@@ -329,7 +352,17 @@ public class HotelController {
             frontDeskControl.registerGuestInfo(guestInfo);
         }
     }
-
+    
+    /* author: Fan Jin Kit */
+    private void loadStandardWaitingCustomers() {
+        WaitingCustomer[] customers = StandardWaitingCustomerData.createNew();
+        for (int index = 0; index < customers.length; index++) {
+            customers[index].setWaitingPosition(index + 1);
+            waitingCustomers.add(customers[index]);
+        }
+    }
+    
+    /* author: Ng Yung Onn */
     private void loadVipWaitingCustomers() {
         WaitingCustomer[] customers = VipWaitingCustomerData.createNew();
         for (int index = 0; index < customers.length; index++) {

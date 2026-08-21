@@ -32,16 +32,16 @@ public class HotelCheckInUI {
     public void start() {
         int choice;
         do {
-            System.out.println("\n=================================");
-            System.out.println("Hotel Check-In System");
-            System.out.println("=================================");
+            System.out.println("\n=======================================");
+            System.out.println("Hotel Reservations Management System");
+            System.out.println("=======================================");
             System.out.println("1. Add Walk-In Reservation");
             System.out.println("2. Check Out");
             System.out.println("3. Check In Customer");
             System.out.println("4. View Room Status");
             System.out.println("5. View Reports");
             System.out.println("6. Back to main menu");
-            System.out.println("=================================");
+            System.out.println("=======================================");
             System.out.print("Enter your choice: ");
             choice = IntegerReader.readInteger();
 
@@ -143,7 +143,7 @@ public class HotelCheckInUI {
     private void viewReports() {
         System.out.println("\nView Reports");
         System.out.println("1. All Reservations Report");
-        System.out.println("2. Waiting List Report");
+        System.out.println("2. Standard Customers Waiting List Report");
         System.out.println("3. Back");
         System.out.print("Enter your choice: ");
         switch (IntegerReader.readInteger()) {

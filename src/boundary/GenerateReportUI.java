@@ -19,8 +19,12 @@ public class GenerateReportUI {
     public void displayReservationReport(RoomType roomTypeFilter,
                                          Boolean checkedOutFilter) {
         List<Reservation> reservations = controller.getAllReservationsSorted();
-        System.out.println("\nAll Reservations Report"
-                + reservationFilterLabel(roomTypeFilter, checkedOutFilter));
+        System.out.println("\n==============================================================================================");
+        System.out.println("All Reservations Report");
+        System.out.println("==============================================================================================");
+        System.out.println("Filter: " + reservationFilterLabel(roomTypeFilter,
+                checkedOutFilter));
+        System.out.println("Sort By: Check-In Date -> Room Capacity -> Nights Stayed");
         System.out.println("==============================================================================================");
         printReservationHeader();
 
@@ -46,7 +50,11 @@ public class GenerateReportUI {
     /** Displays waiting customers in waiting-position order. */
     public void displayWaitingReport(RoomType roomTypeFilter) {
         List<WaitingCustomer> waitingCustomers = controller.getWaitingCustomers();
-        System.out.println("\nWaiting List Report" + filterLabel(roomTypeFilter));
+        System.out.println("\n================================================================================");
+        System.out.println("Standard Customers Waiting List Report");
+        System.out.println("================================================================================");
+        System.out.println("Filter: " + filterLabel(roomTypeFilter));
+        System.out.println("Sort By: Waiting Position Number");
         System.out.println("================================================================================");
         System.out.printf("%-10s %-20s %-8s %-15s %-12s %-12s%n",
                 "Position", "Customer Name", "Pax", "Check-in", "Nights",
@@ -92,8 +100,8 @@ public class GenerateReportUI {
     }
 
     private String filterLabel(RoomType roomTypeFilter) {
-        return roomTypeFilter == null ? " (All Types)" : " ("
-                + roomTypeFilter.getDisplayName() + ")";
+        return roomTypeFilter == null ? "All Room Types"
+                : roomTypeFilter.getDisplayName() + " Room Type";
     }
 
     private String reservationFilterLabel(RoomType roomTypeFilter,
@@ -102,6 +110,7 @@ public class GenerateReportUI {
         if (checkedOutFilter == null) {
             return typeLabel;
         }
-        return typeLabel + (checkedOutFilter ? " (Checked Out)" : " (Active)");
+        return typeLabel + " | "
+                + (checkedOutFilter ? "Checked Out Customers" : "Active Customers");
     }
 }
