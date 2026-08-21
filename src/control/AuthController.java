@@ -3,6 +3,7 @@ package control;
 import dao.UserData;
 import entity.User;
 
+/* author: Ho Jia Ming */
 public class AuthController {
 
     private User currentUser;

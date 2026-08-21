@@ -8,6 +8,7 @@ import entity.Room;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/* author: Ho Jia Ming */
 public class HousekeepingController {
 
     private final LinkedStack<HousekeepingLog> housekeepingStack;

@@ -1,5 +1,6 @@
 package entity;
 
+/* author: Ho Jia Ming */
 public class User {
 
     private String username;

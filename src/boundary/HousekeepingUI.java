@@ -13,6 +13,7 @@ import entity.Room;
 import entity.RoomType;
 import util.InputUtil;
 
+/* author: Ho Jia Ming */
 public class HousekeepingUI {
 
     private final HousekeepingController controller;
@@ -91,8 +92,8 @@ public class HousekeepingUI {
         System.out.println("=========================================");
 
         System.out.println("\nAvailable Users:");
-        System.out.println("  Staff: staff1, staff2, staff3 (Password: staff123/456/789)");
-        System.out.println("  Supervisors: supervisor1, supervisor2 (Password: sup123/456)");
+        System.out.println(" Staff: staff1,staff2,staff3 (Password: staff123/456/789)");
+        System.out.println(" Supervisors: supervisor1,supervisor2 (Password: sup123/456)");
         System.out.println("=========================================");
 
         int attempts = 0;
@@ -103,14 +104,14 @@ public class HousekeepingUI {
             String password = InputUtil.readString("");
 
             if (authController.login(username, password)) {
-                System.out.println("\n✓ Login successful! Welcome, " + username + "!");
+                System.out.println("\nLogin successful! Welcome, " + username + "!");
                 System.out.println("Role: " + authController.getCurrentUser().getRole().getDisplayName());
                 InputUtil.pressEnterToContinue();
                 return true;
             }
 
             attempts++;
-            System.out.println("✗ Invalid username or password. Attempts remaining: " + (3 - attempts));
+            System.out.println("Invalid username or password. Attempts remaining: " + (3 - attempts));
         }
 
         System.out.println("Too many failed attempts. Access denied.");
@@ -127,7 +128,7 @@ public class HousekeepingUI {
 
     private void updateStatus() {
         System.out.println("\n--- Update Room Cleaning Status ---");
-        int roomNum = InputUtil.readIntWithExit("Enter Room Number (101-510, or -1 to cancel): ", 101, 510);
+        int roomNum = InputUtil.readIntWithExit("Enter Room Number (101-304, or -1 to cancel): ", 101, 304);
         if (roomNum == -1) {
             System.out.println("Operation cancelled.");
             InputUtil.pressEnterToContinue();
@@ -192,7 +193,7 @@ public class HousekeepingUI {
         }
 
         System.out.println("\n--- Supervisor Action: Approve/Reject Cleaning ---");
-        int roomNum = InputUtil.readIntWithExit("Enter Room Number (101-510, or -1 to cancel): ", 101, 510);
+        int roomNum = InputUtil.readIntWithExit("Enter Room Number (101-304, or -1 to cancel): ", 101, 304);
         if (roomNum == -1) {
             System.out.println("Operation cancelled.");
             InputUtil.pressEnterToContinue();

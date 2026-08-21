@@ -1,5 +1,6 @@
 package adt;
 
+/* author: Ho Jia Ming */
 public class LinkedStack<T> implements StackInterface<T> {
 
     private Node topNode; // References node at top of stack

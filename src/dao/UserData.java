@@ -3,6 +3,7 @@ package dao;
 import entity.User;
 import entity.UserRole;
 
+/* author: Ho Jia Ming */
 public final class UserData {
 
     private UserData() {

@@ -1,5 +1,6 @@
 package entity;
 
+/* author: Ho Jia Ming */
 public enum UserRole {
     HOUSEKEEPING_STAFF("Housekeeping Staff"),
     SUPERVISOR("Supervisor");

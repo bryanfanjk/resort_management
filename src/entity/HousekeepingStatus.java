@@ -1,5 +1,6 @@
 package entity;
 
+/* author: Ho Jia Ming */
 public enum HousekeepingStatus {
     DIRTY("Dirty", 1),
     CLEANING_IN_PROGRESS("Cleaning In Progress", 2),

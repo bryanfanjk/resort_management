@@ -2,6 +2,7 @@ package util;
 
 import java.util.Scanner;
 
+/* author: Ho Jia Ming */
 public class InputUtil {
 
     private static final Scanner scanner = new Scanner(System.in);

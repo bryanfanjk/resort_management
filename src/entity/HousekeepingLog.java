@@ -1,5 +1,6 @@
 package entity;
 
+/* author: Ho Jia Ming */
 public class HousekeepingLog {
 
     private int roomNumber;
