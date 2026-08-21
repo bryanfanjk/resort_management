@@ -355,19 +355,6 @@ public class HotelController {
         }
     }
     
-    /* author: Fan Jin Kit */
-    private void loadStandardWaitingCustomers() {
-        WaitingCustomer[] customers = StandardWaitingCustomerData.createNew();
-        for (int index = 0; index < customers.length; index++) {
-            customers[index].setWaitingPosition(index + 1);
-            waitingCustomers.add(customers[index]);
-
-            double rate = FrontDeskControl.getDailyRate(reservation.getRoom().getRoomType());
-            GuestBillingInfo guestInfo = new GuestBillingInfo(confCode, reservation.getCustomer(), reservation.getRoom(), rate);
-            frontDeskControl.registerGuestInfo(guestInfo);
-        }
-    }
-    
     /* author: Ng Yung Onn */
     private void loadVipWaitingCustomers() {
         WaitingCustomer[] customers = VipWaitingCustomerData.createNew();
