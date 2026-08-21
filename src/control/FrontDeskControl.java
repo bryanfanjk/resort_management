@@ -17,8 +17,9 @@ import entity.Room;
 import entity.RoomType;
 import entity.WaitingCustomer;
 
+/* author: Loh Chun Yi */
 public class FrontDeskControl {
-
+/* author: Loh Chun Yi */
     private BinarySearchTree<String, GuestBillingInfo> guestBst;
 
     public FrontDeskControl() {
@@ -33,6 +34,8 @@ public class FrontDeskControl {
     /**
      * Loads initial seed data from DAO files into BST with CONF0001 - CONF0012.
      */
+
+    /* author: Loh Chun Yi */
     public void loadInitialDaoData(Room[] rooms) {
         int counter = 1;
 
@@ -79,6 +82,7 @@ public class FrontDeskControl {
         }
     }
 
+    /* author: Loh Chun Yi */
     public static double getDailyRate(RoomType roomType) {
         if (roomType == null) {
             return 150.0;
@@ -98,6 +102,7 @@ public class FrontDeskControl {
     /**
      * Registers or updates guest billing info into the Non-Linear BST ADT indexed by 8-digit confirmation number.
      */
+    /* author: Loh Chun Yi */
     public void registerGuestInfo(GuestBillingInfo guestInfo) {
         if (guestInfo != null && guestInfo.getConfirmationNumber() != null) {
             guestBst.insert(guestInfo.getConfirmationNumber().trim().toUpperCase(), guestInfo);
@@ -107,6 +112,7 @@ public class FrontDeskControl {
     /**
      * Updates room assignment for an existing guest in BST.
      */
+    /* author: Loh Chun Yi */
     public void updateGuestRoomAssignment(String confirmationNumber, Room room) {
         if (confirmationNumber == null) return;
         GuestBillingInfo info = searchGuestByConfirmation(confirmationNumber);
@@ -122,6 +128,7 @@ public class FrontDeskControl {
     /**
      * Updates checkout date for an existing guest in BST.
      */
+    /* author: Loh Chun Yi */
     public void updateGuestCheckout(String confirmationNumber, String checkOutDate) {
         if (confirmationNumber == null) return;
         GuestBillingInfo info = searchGuestByConfirmation(confirmationNumber);
@@ -135,6 +142,7 @@ public class FrontDeskControl {
     /**
      * Instantly retrieves guest information using 8-digit confirmation number from Non-Linear BST ADT.
      */
+    /* author: Loh Chun Yi */
     public GuestBillingInfo searchGuestByConfirmation(String confirmationNumber) {
         if (confirmationNumber == null || confirmationNumber.trim().isEmpty()) {
             return null;
@@ -145,6 +153,7 @@ public class FrontDeskControl {
     /**
      * Evaluates room availability across all rooms.
      */
+    /* author: Loh Chun Yi */
     public String getRoomAvailabilitySummary(Room[] rooms) {
         if (rooms == null || rooms.length == 0) {
             return "No room data available.";
@@ -171,6 +180,7 @@ public class FrontDeskControl {
     /**
      * Returns total record count in BST index.
      */
+    /* author: Loh Chun Yi */
     public int getGuestCount() {
         return guestBst.size();
     }
@@ -178,6 +188,7 @@ public class FrontDeskControl {
     /**
      * Retrieves all guests stored in the BST.
      */
+    /* author: Loh Chun Yi */
     public GuestBillingInfo[] getAllGuests() {
         Object[] raw = guestBst.getAllValues();
         GuestBillingInfo[] result = new GuestBillingInfo[raw.length];
@@ -190,6 +201,7 @@ public class FrontDeskControl {
     /**
      * Retrieves guests filtered by check-in date (DD/MM/YYYY).
      */
+    /* author: Loh Chun Yi */
     public GuestBillingInfo[] getFilteredGuestsByCheckIn(String checkInDate) {
         if (checkInDate == null) {
             return new GuestBillingInfo[0];
@@ -215,6 +227,7 @@ public class FrontDeskControl {
     /**
      * Retrieves guests filtered by VIP customer type.
      */
+    /* author: Loh Chun Yi */
     public GuestBillingInfo[] getFilteredVipGuests() {
         GuestBillingInfo[] all = getAllGuests();
         int count = 0;
@@ -237,6 +250,7 @@ public class FrontDeskControl {
     /**
      * Generates a comprehensive Financial Report with Daily Revenue calculations.
      */
+    /* author: Loh Chun Yi */
     public String generateFinancialReport(Room[] rooms) {
         StringBuilder sb = new StringBuilder();
         sb.append("\n========================================================================\n");
