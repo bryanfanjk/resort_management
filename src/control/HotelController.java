@@ -352,13 +352,9 @@ public class HotelController {
                 reservation.getCustomer().setConfirmationNumber(confCode);
             }
             completedReservations.add(reservation);
-
-            double rate = FrontDeskControl.getDailyRate(reservation.getRoom().getRoomType());
-            GuestBillingInfo guestInfo = new GuestBillingInfo(confCode, reservation.getCustomer(), reservation.getRoom(), rate);
-            frontDeskControl.registerGuestInfo(guestInfo);
         }
     }
-
+    
     /* author: Ng Yung Onn */
     private void loadVipWaitingCustomers() {
         WaitingCustomer[] customers = VipWaitingCustomerData.createNew();
