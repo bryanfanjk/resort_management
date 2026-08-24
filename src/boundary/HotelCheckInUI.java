@@ -63,6 +63,10 @@ public class HotelCheckInUI {
         System.out.print(
         "Enter VIP code, or press Enter for standard customer: ");
         String vipCode = scanner.nextLine().trim();
+        if (!vipCode.isEmpty() && !controller.isValidVipCode(vipCode)) {
+            System.out.println("\nInvalid VIP code. Returning to the previous menu.");
+            return;
+        }
 
         Customer[] customers = new Customer[roomCount];
         RoomType[] roomTypes = new RoomType[roomCount];

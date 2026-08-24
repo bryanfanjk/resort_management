@@ -56,6 +56,11 @@ public class HotelController {
         return false;
     }
 
+    /** Allows the user interface to validate a supplied VIP code. */
+    public boolean isValidVipCode(String vipCode) {
+        return vipController.isValidVipCode(vipCode);
+    }
+
     /* author: Fan Jin Kit & Ng Yung Onn*/
     public WaitingCustomer addWalkInReservation(Customer customer,
             RoomType requestedRoomType) {
