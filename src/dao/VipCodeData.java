@@ -1,7 +1,7 @@
 package dao;
 
 /**
- * Author: <Your Name Here>
+ * Author: Ng Yung Onn
  *
  * Hardcoded VIP verification codes - deliberately just codes, no names
  * or other details attached. This is the "VIP list" used purely as a
