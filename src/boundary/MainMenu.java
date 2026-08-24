@@ -45,10 +45,10 @@ public class MainMenu {
         do {
             System.out.println("\nTARUMT  Resorts, a luxury hospitality chain.");
             System.out.println("==============================================");
-            System.out.println("1. Module 1 Walk-In Registrations & Standard Booking Procedure");
-            System.out.println("2. Module 2 VIP & Loyalty Tier Priority Room Allocation");
-            System.out.println("3. Module 3 Housekeeping and Task Log");
-            System.out.println("4. Module 4 Front-Desk Service & Billing");
+            System.out.println("1. Walk-In Registrations & Standard Booking Procedure");
+            System.out.println("2. View VIP Report");
+            System.out.println("3. Housekeeping and Task Log");
+            System.out.println("4. Front-Desk Service & Billing");
             System.out.println("0. Exit");
             System.out.print("Enter your choice: ");
             choice = IntegerReader.readInteger();

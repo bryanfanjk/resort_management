@@ -89,6 +89,19 @@ public class HotelCheckInUI {
         for (int roomIndex = 0; roomIndex < waitingCustomers.size(); roomIndex++) {
             System.out.println("Room " + (roomIndex + 1) + " Confirmation Number: "
                     + waitingCustomers.get(roomIndex).getConfirmationNumber());
+        WaitingCustomer waitingCustomer =
+        controller.addWalkInReservation(
+                customer,
+                roomType,
+                vipCode);
+
+        if (waitingCustomer.getCustomerType() == CustomerType.VIP) {
+            System.out.println("\nVIP customer added to the VIP waiting list.");
+        } else if (!vipCode.isEmpty()) {
+            System.out.println("\nInvalid VIP code, defaulting to standard customer.");
+        } else {
+            System.out.println(
+                "\nStandard customer added to the standard waiting list.");
         }
     }
 
