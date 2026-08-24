@@ -9,8 +9,8 @@ import entity.WaitingCustomer;
 /** Displays active, waiting, and completed-reservation reports. */
 public class GenerateReportUI {
 
-    private static final String TITLE_DIVIDER = divider('=', 100);
-    private static final String ROW_DIVIDER = divider('-', 100);
+    private static final String TITLE_DIVIDER = divider('=', 130);
+    private static final String ROW_DIVIDER = divider('-', 130);
     private final HotelController controller;
 
     public GenerateReportUI(HotelController controller) {
@@ -31,6 +31,7 @@ public class GenerateReportUI {
         printReservationHeader();
 
         int displayed = 0;
+        boolean[] displayedReservations = new boolean[reservations.size()];
         for (int i = 0; i < reservations.size(); i++) {
             Reservation reservation = reservations.get(i);
             boolean typeMatches = roomTypeFilter == null
@@ -38,8 +39,21 @@ public class GenerateReportUI {
             boolean statusMatches = checkedOutFilter == null
                     || (reservation.getCustomer().getCheckOutDate() != null)
                     == checkedOutFilter;
-            if (typeMatches && statusMatches) {
-                printReservation(reservation);
+            if (!displayedReservations[i] && typeMatches && statusMatches) {
+                int quantity = 1;
+                StringBuilder roomNumbers = new StringBuilder(
+                        String.valueOf(reservation.getRoom().getRoomNumber()));
+                for (int candidateIndex = i + 1;
+                        candidateIndex < reservations.size(); candidateIndex++) {
+                    Reservation candidate = reservations.get(candidateIndex);
+                    if (sameReservationDetails(reservation, candidate)) {
+                        quantity++;
+                        displayedReservations[candidateIndex] = true;
+                        roomNumbers.append(", ")
+                                .append(candidate.getRoom().getRoomNumber());
+                    }
+                }
+                printReservation(reservation, roomNumbers.toString(), quantity);
                 displayed++;
             }
         }
@@ -103,14 +117,15 @@ public class GenerateReportUI {
     }
 
     private void printReservationHeader() {
-        System.out.printf("%-20s %-8s %-15s %-15s %-12s %-12s %-10s%n",
+        System.out.printf("%-20s %-8s %-15s %-15s %-12s %-12s %-22s %-10s%n",
                 "Customer Name", "Pax", "Check-in", "Check-out", "Nights",
-                "Room Type", "Room");
+                "Room Type", "Room No(s)", "Quantity");
         System.out.println(ROW_DIVIDER);
     }
 
-    private void printReservation(Reservation reservation) {
-        System.out.printf("%-20s %-8d %-15s %-15s %-12d %-12s %-10d%n",
+    private void printReservation(Reservation reservation, String roomNumbers,
+                                  int quantity) {
+        System.out.printf("%-20s %-8d %-15s %-15s %-12d %-12s %-22s %-10d%n",
                 reservation.getCustomer().getCustomerName(),
                 reservation.getCustomer().getPax(),
                 reservation.getCustomer().getCheckInDate(),
@@ -118,7 +133,29 @@ public class GenerateReportUI {
                         ? "-" : reservation.getCustomer().getCheckOutDate(),
                 reservation.getCustomer().getNightsStayed(),
                 reservation.getRoom().getRoomType().getDisplayName(),
-                reservation.getRoom().getRoomNumber());
+                roomNumbers, quantity);
+    }
+
+    /** Returns true when two reservations can share one report row. */
+    private boolean sameReservationDetails(Reservation first,
+                                           Reservation second) {
+        return first.getCustomer().getCustomerName().equalsIgnoreCase(
+                        second.getCustomer().getCustomerName())
+                && first.getCustomer().getPax() == second.getCustomer().getPax()
+                && first.getCustomer().getCheckInDate().equals(
+                        second.getCustomer().getCheckInDate())
+                && sameCheckOutDate(first, second)
+                && first.getCustomer().getNightsStayed()
+                        == second.getCustomer().getNightsStayed()
+                && first.getCustomer().getCustomerType()
+                        == second.getCustomer().getCustomerType()
+                && first.getRoom().getRoomType() == second.getRoom().getRoomType();
+    }
+
+    private boolean sameCheckOutDate(Reservation first, Reservation second) {
+        String firstDate = first.getCustomer().getCheckOutDate();
+        String secondDate = second.getCustomer().getCheckOutDate();
+        return firstDate == null ? secondDate == null : firstDate.equals(secondDate);
     }
 
     private String filterLabel(RoomType roomTypeFilter) {

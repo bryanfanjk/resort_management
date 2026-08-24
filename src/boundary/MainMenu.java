@@ -45,8 +45,8 @@ public class MainMenu {
         do {
             System.out.println("\nTARUMT  Resorts, a luxury hospitality chain.");
             System.out.println("==============================================");
-            System.out.println("1. Walk-In Registrations & Standard Booking Procedure");
-            System.out.println("2. View VIP Report");
+            System.out.println("1. Manage Walk-In Reservations for Standard and VIP Guests");
+            System.out.println("2. View Reports (Standard and VIP Guests)");
             System.out.println("3. Housekeeping and Task Log");
             System.out.println("4. Front-Desk Service & Billing");
             System.out.println("0. Exit");

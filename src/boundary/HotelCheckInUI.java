@@ -19,7 +19,6 @@ public class HotelCheckInUI {
 
     private final Scanner scanner = new Scanner(System.in);
     private final HotelController controller;
-    private final GenerateReportUI reportUI;
 
     public HotelCheckInUI() {
         this(new HotelController());
@@ -27,7 +26,6 @@ public class HotelCheckInUI {
 
     public HotelCheckInUI(HotelController controller) {
         this.controller = controller != null ? controller : new HotelController();
-        this.reportUI = new GenerateReportUI(this.controller);
     }
 
     public void start() {
@@ -40,8 +38,7 @@ public class HotelCheckInUI {
             System.out.println("2. Check Out");
             System.out.println("3. Check In Customer");
             System.out.println("4. View Room Status");
-            System.out.println("5. View Reports");
-            System.out.println("6. Back to main menu");
+            System.out.println("5. Back to main menu");
             System.out.println("=======================================");
             System.out.print("Enter your choice: ");
             choice = IntegerReader.readInteger();
@@ -51,11 +48,10 @@ public class HotelCheckInUI {
                 case 2: checkOut(); break;
                 case 3: checkInCustomer(); break;
                 case 4: displayRoomStatus(); break;
-                case 5: viewReports(); break;
-                case 6: break;
+                case 5: break;
                 default: System.out.println("\nInvalid choice.");
             }
-        } while (choice != 6);
+        } while (choice != 5);
     }
 
     private void addWalkInReservation() {
@@ -89,19 +85,6 @@ public class HotelCheckInUI {
         for (int roomIndex = 0; roomIndex < waitingCustomers.size(); roomIndex++) {
             System.out.println("Room " + (roomIndex + 1) + " Confirmation Number: "
                     + waitingCustomers.get(roomIndex).getConfirmationNumber());
-        WaitingCustomer waitingCustomer =
-        controller.addWalkInReservation(
-                customer,
-                roomType,
-                vipCode);
-
-        if (waitingCustomer.getCustomerType() == CustomerType.VIP) {
-            System.out.println("\nVIP customer added to the VIP waiting list.");
-        } else if (!vipCode.isEmpty()) {
-            System.out.println("\nInvalid VIP code, defaulting to standard customer.");
-        } else {
-            System.out.println(
-                "\nStandard customer added to the standard waiting list.");
         }
     }
 
@@ -148,98 +131,6 @@ public class HotelCheckInUI {
             System.out.printf("%-10d %-12s %-10d %-12s%n",
                     room.getRoomNumber(), room.getRoomType().getDisplayName(),
                     room.getCapacity(), room.getStatus().getDisplayName());
-        }
-    }
-
-    private void viewReports() {
-        System.out.println("\nView Reports");
-        System.out.println("1. All Reservations Report");
-        System.out.println("2. Standard Customers Waiting List Report");
-        System.out.println("3. Back");
-        System.out.print("Enter your choice: ");
-        switch (IntegerReader.readInteger()) {
-            case 1: viewFilteredReservationReport(); break;
-            case 2: viewFilteredWaitingReport(); break;
-            default: break;
-        }
-    }
-
-    private void viewFilteredReservationReport() {
-        reportUI.displayReservationReport(null, null);
-        while (true) {
-            int filterChoice = readReservationFilterChoice();
-            if (filterChoice == 7) {
-                return;
-            }
-            switch (filterChoice) {
-                case 1: reportUI.displayReservationReport(RoomType.DELUXE, null); break;
-                case 2: reportUI.displayReservationReport(RoomType.PREMIUM, null); break;
-                case 3: reportUI.displayReservationReport(RoomType.PLATINUM, null); break;
-                case 4: reportUI.displayReservationReport(null, null); break;
-                case 5: reportUI.displayReservationReport(null, true); break;
-                case 6: reportUI.displayReservationReport(null, false); break;
-                default: break;
-            }
-        }
-    }
-
-    private int readReservationFilterChoice() {
-        while (true) {
-            System.out.println("\nFilter all reservations by:");
-            System.out.println("1. Deluxe");
-            System.out.println("2. Premium");
-            System.out.println("3. Platinum");
-            System.out.println("4. All Room Types");
-            System.out.println("5. Checked Out Customers");
-            System.out.println("6. Active Customers");
-            System.out.println("7. Back");
-            System.out.print("Enter your choice: ");
-            try {
-                int choice = Integer.parseInt(scanner.nextLine().trim());
-                if (choice >= 1 && choice <= 7) {
-                    return choice;
-                }
-            } catch (NumberFormatException exception) {
-                // Show the same validation message below.
-            }
-            System.out.println("Please choose 1, 2, 3, 4, 5, 6, or 7.");
-        }
-    }
-
-    private void viewFilteredWaitingReport() {
-        reportUI.displayWaitingReport(null);
-        while (true) {
-            RoomType filter = readReportFilter();
-            if (filter == null && lastFilterWasExit) {
-                return;
-            }
-            reportUI.displayWaitingReport(filter);
-        }
-    }
-
-    private boolean lastFilterWasExit;
-
-    /** Returns null for All; the flag distinguishes All from Back. */
-    private RoomType readReportFilter() {
-        lastFilterWasExit = false;
-        while (true) {
-            System.out.println("\nFilter by room type:");
-            System.out.println("1. Deluxe");
-            System.out.println("2. Premium");
-            System.out.println("3. Platinum");
-            System.out.println("4. All");
-            System.out.println("5. Back");
-            System.out.print("Enter your choice: ");
-            switch (scanner.nextLine().trim()) {
-                case "1": return RoomType.DELUXE;
-                case "2": return RoomType.PREMIUM;
-                case "3": return RoomType.PLATINUM;
-                case "4": return null;
-                case "5":
-                    lastFilterWasExit = true;
-                    return null;
-                default: System.out.println("Please choose 1, 2, 3, 4, or 5.");
-            }
         }
     }
 

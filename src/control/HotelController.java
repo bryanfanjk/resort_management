@@ -25,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 /* author: All Members have contributed in this controller. */
 public class HotelController {
 
+    private static final int WAITING_LIST_CAPACITY = 100;
     private final Room[] rooms;
     private final List<WaitingCustomer> waitingCustomers = new List<>(100);
     private final List<Reservation> activeReservations = new List<>(100);
@@ -77,16 +78,26 @@ public class HotelController {
             throw new IllegalArgumentException(
                     "Each room must have a customer and room requirement.");
         }
+        for (int index = 0; index < customers.length; index++) {
+            if (customers[index] == null || requestedRoomTypes[index] == null) {
+                throw new IllegalArgumentException(
+                        "Each room must have a customer and room requirement.");
+            }
+        }
+
         CustomerType customerType = vipController.isValidVipCode(vipCode)
                 ? CustomerType.VIP : CustomerType.STANDARD;
+        int queuedCustomers = customerType == CustomerType.VIP
+                ? vipController.waitingVipCount() : waitingCustomers.size();
+        if (queuedCustomers + customers.length > WAITING_LIST_CAPACITY) {
+            throw new IllegalStateException(
+                    "There is not enough space in the waiting list for all rooms.");
+        }
+
         List<WaitingCustomer> addedCustomers = new List<>(customers.length);
         for (int index = 0; index < customers.length; index++) {
             Customer customer = customers[index];
             RoomType requestedRoomType = requestedRoomTypes[index];
-            if (customer == null || requestedRoomType == null) {
-                throw new IllegalArgumentException(
-                        "Each room must have a customer and room requirement.");
-            }
             customer.setCustomerType(customerType);
             String confCode = String.format("CONF%04d", confirmationCounter++);
             customer.setConfirmationNumber(confCode);
