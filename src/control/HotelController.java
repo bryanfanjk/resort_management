@@ -52,10 +52,7 @@ public class HotelController {
 
     /* author: Fan Jin Kit & Ng Yung Onn*/
     public boolean customerExists(String name) {
-        return containsReservationCustomer(activeReservations, name)
-                || containsReservationCustomer(completedReservations, name)
-                || containsWaitingCustomer(name)
-                || containsVipWaitingCustomer(name);
+        return false;
     }
 
     /* author: Fan Jin Kit & Ng Yung Onn*/
@@ -67,26 +64,48 @@ public class HotelController {
     public WaitingCustomer addWalkInReservation(Customer customer,
             RoomType requestedRoomType,
             String vipCode) {
+        return addWalkInReservations(new Customer[]{customer},
+                new RoomType[]{requestedRoomType}, vipCode).get(0);
+    }
+
+    /** Adds one waiting-list request for each room a customer requires. */
+    public List<WaitingCustomer> addWalkInReservations(Customer[] customers,
+            RoomType[] requestedRoomTypes, String vipCode) {
+        if (customers == null || requestedRoomTypes == null
+                || customers.length == 0
+                || customers.length != requestedRoomTypes.length) {
+            throw new IllegalArgumentException(
+                    "Each room must have a customer and room requirement.");
+        }
         CustomerType customerType = vipController.isValidVipCode(vipCode)
                 ? CustomerType.VIP : CustomerType.STANDARD;
-        customer.setCustomerType(customerType);
+        List<WaitingCustomer> addedCustomers = new List<>(customers.length);
+        for (int index = 0; index < customers.length; index++) {
+            Customer customer = customers[index];
+            RoomType requestedRoomType = requestedRoomTypes[index];
+            if (customer == null || requestedRoomType == null) {
+                throw new IllegalArgumentException(
+                        "Each room must have a customer and room requirement.");
+            }
+            customer.setCustomerType(customerType);
+            String confCode = String.format("CONF%04d", confirmationCounter++);
+            customer.setConfirmationNumber(confCode);
 
-        String confCode = String.format("CONF%04d", confirmationCounter++);
-        customer.setConfirmationNumber(confCode);
+            WaitingCustomer waitingCustomer = new WaitingCustomer(customer,
+                    requestedRoomType, getTotalWaitingCount() + 1);
+            if (customerType == CustomerType.VIP) {
+                vipController.addVip(waitingCustomer);
+            } else {
+                waitingCustomers.add(waitingCustomer);
+            }
 
-        WaitingCustomer waitingCustomer = new WaitingCustomer(customer,
-                requestedRoomType, getTotalWaitingCount() + 1);
-        if (customerType == CustomerType.VIP) {
-            vipController.addVip(waitingCustomer);
-        } else {
-            waitingCustomers.add(waitingCustomer);
+            double rate = FrontDeskControl.getDailyRate(requestedRoomType);
+            GuestBillingInfo guestInfo = new GuestBillingInfo(confCode, customer,
+                    null, rate);
+            frontDeskControl.registerGuestInfo(guestInfo);
+            addedCustomers.add(waitingCustomer);
         }
-
-        double rate = FrontDeskControl.getDailyRate(requestedRoomType);
-        GuestBillingInfo guestInfo = new GuestBillingInfo(confCode, customer, null, rate);
-        frontDeskControl.registerGuestInfo(guestInfo);
-
-        return waitingCustomer;
+        return addedCustomers;
     }
 
     /* author: Fan Jin Kit */

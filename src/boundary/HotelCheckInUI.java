@@ -1,6 +1,7 @@
 package boundary;
 
 import java.util.Scanner;
+import adt.List;
 import control.HotelController;
 import entity.AssignmentResult;
 import entity.Customer;
@@ -62,36 +63,33 @@ public class HotelCheckInUI {
         System.out.println("Add Walk-In Reservation");
         System.out.println("=================================");
         String name = readCustomerName();
-        int pax = readPositiveInteger("Number of Pax: ");
-        String checkInDate = readDate("Check-in Date (DD/MM/YYYY): ");
-        int nightsStayed = readPositiveInteger("Nights Stayed: ");
-        RoomType roomType = readRoomType();
+        int roomCount = readPositiveInteger("Number of Rooms Required: ");
         System.out.print(
         "Enter VIP code, or press Enter for standard customer: ");
         String vipCode = scanner.nextLine().trim();
-        
-        Customer customer = new Customer(
-        name,
-        pax,
-        checkInDate,
-        nightsStayed, CustomerType.STANDARD);
 
-        WaitingCustomer waitingCustomer =
-        controller.addWalkInReservation(
-                customer,
-                roomType,
-                vipCode);
-
-        if (waitingCustomer.getCustomerType()
-            == CustomerType.VIP) {
-
-            System.out.println(
-            "\nVIP customer added to the VIP waiting list.");
-        } else {
-            System.out.println(
-                "\nStandard customer added to the standard waiting list.");
+        Customer[] customers = new Customer[roomCount];
+        RoomType[] roomTypes = new RoomType[roomCount];
+        for (int roomIndex = 0; roomIndex < roomCount; roomIndex++) {
+            System.out.println("\nRoom " + (roomIndex + 1) + " Requirements");
+            int pax = readPositiveInteger("Number of Pax: ");
+            String checkInDate = readDate("Check-in Date (DD/MM/YYYY): ");
+            int nightsStayed = readPositiveInteger("Nights Stayed: ");
+            roomTypes[roomIndex] = readRoomType();
+            customers[roomIndex] = new Customer(name, pax, checkInDate,
+                    nightsStayed, CustomerType.STANDARD);
         }
-        System.out.println("Confirmation Number: " + waitingCustomer.getConfirmationNumber());
+
+        List<WaitingCustomer> waitingCustomers = controller.addWalkInReservations(
+                customers, roomTypes, vipCode);
+        CustomerType customerType = waitingCustomers.get(0).getCustomerType();
+        System.out.println(customerType == CustomerType.VIP
+                ? "\nVIP customer added to the VIP waiting list."
+                : "\nStandard customer added to the standard waiting list.");
+        for (int roomIndex = 0; roomIndex < waitingCustomers.size(); roomIndex++) {
+            System.out.println("Room " + (roomIndex + 1) + " Confirmation Number: "
+                    + waitingCustomers.get(roomIndex).getConfirmationNumber());
+        }
     }
 
     private void checkOut() {
@@ -244,8 +242,6 @@ public class HotelCheckInUI {
             String name = scanner.nextLine().trim();
             if (name.isEmpty()) {
                 System.out.println("Customer name cannot be empty.");
-            } else if (controller.customerExists(name)) {
-                System.out.println("Customer name already exists.");
             } else {
                 return name;
             }
