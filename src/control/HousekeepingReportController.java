@@ -5,7 +5,7 @@ import adt.List;
 import adt.ListInterface;
 import entity.HousekeepingLog;
 import entity.HousekeepingReport;
-import entity.HousekeepingStatus;
+import entity.RoomStatus;
 import entity.Room;
 import entity.RoomType;
 
@@ -25,13 +25,13 @@ public class HousekeepingReportController {
     // REPORT 1: ROOM CLEANING STATUS REPORT
     // ============================================================
     public HousekeepingReport generateRoomStatusReport(RoomType roomTypeFilter,
-            HousekeepingStatus statusFilter) {
+            RoomStatus statusFilter) {
         ListInterface<Room> filteredRooms = new List<>(rooms.size());
 
         for (int i = 0; i < rooms.size(); i++) {
             Room room = rooms.get(i);
             boolean matchRoomType = (roomTypeFilter == null || room.getRoomType() == roomTypeFilter);
-            boolean matchStatus = (statusFilter == null || room.getHousekeepingStatus() == statusFilter);
+            boolean matchStatus = (statusFilter == null || room.getRoomStatus() == statusFilter);
 
             if (matchRoomType && matchStatus) {
                 filteredRooms.add(room);
@@ -65,12 +65,12 @@ public class HousekeepingReportController {
                         comparison = sortedRooms.get(targetIdx).getRoomNumber() - sortedRooms.get(j).getRoomNumber();
                         break;
                     case 3: // Status Ascending
-                        comparison = sortedRooms.get(j).getHousekeepingStatus().getSequenceNumber()
-                                - sortedRooms.get(targetIdx).getHousekeepingStatus().getSequenceNumber();
+                        comparison = sortedRooms.get(j).getRoomStatus().getSequenceNumber()
+                                - sortedRooms.get(targetIdx).getRoomStatus().getSequenceNumber();
                         break;
                     case 4: // Status Descending
-                        comparison = sortedRooms.get(targetIdx).getHousekeepingStatus().getSequenceNumber()
-                                - sortedRooms.get(j).getHousekeepingStatus().getSequenceNumber();
+                        comparison = sortedRooms.get(targetIdx).getRoomStatus().getSequenceNumber()
+                                - sortedRooms.get(j).getRoomStatus().getSequenceNumber();
                         break;
                 }
 

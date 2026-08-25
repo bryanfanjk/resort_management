@@ -4,12 +4,12 @@ package entity;
 public class HousekeepingLog {
 
     private int roomNumber;
-    private HousekeepingStatus oldStatus;
-    private HousekeepingStatus newStatus;
+    private RoomStatus oldStatus;
+    private RoomStatus newStatus;
     private String supervisorName;
     private String timestamp;
 
-    public HousekeepingLog(int roomNumber, HousekeepingStatus oldStatus, HousekeepingStatus newStatus, String supervisorName, String timestamp) {
+    public HousekeepingLog(int roomNumber, RoomStatus oldStatus, RoomStatus newStatus, String supervisorName, String timestamp) {
         this.roomNumber = roomNumber;
         this.oldStatus = oldStatus;
         this.newStatus = newStatus;
@@ -25,19 +25,19 @@ public class HousekeepingLog {
         this.roomNumber = roomNumber;
     }
 
-    public HousekeepingStatus getOldStatus() {
+    public RoomStatus getOldStatus() {
         return oldStatus;
     }
 
-    public void setOldStatus(HousekeepingStatus oldStatus) {
+    public void setOldStatus(RoomStatus oldStatus) {
         this.oldStatus = oldStatus;
     }
 
-    public HousekeepingStatus getNewStatus() {
+    public RoomStatus getNewStatus() {
         return newStatus;
     }
 
-    public void setNewStatus(HousekeepingStatus newStatus) {
+    public void setNewStatus(RoomStatus newStatus) {
         this.newStatus = newStatus;
     }
 

@@ -166,7 +166,7 @@ public class FrontDeskControl {
         int availableCount = 0;
         for (Room r : rooms) {
             if (r != null) {
-                String status = r.isAvailable() ? "AVAILABLE" : "OCCUPIED";
+                String status = r.getOccupancyStatus().getLabel().toUpperCase();
                 if (r.isAvailable()) availableCount++;
                 sb.append(String.format("%-12d %-12d %-15s%n", r.getRoomNumber(), r.getCapacity(), status));
             }
@@ -265,7 +265,7 @@ public class FrontDeskControl {
         if (rooms != null) {
             for (Room r : rooms) {
                 if (r != null && r.getRoomType() != null) {
-                    boolean isOcc = !r.isAvailable();
+                    boolean isOcc = r.isOccupied();
                     switch (r.getRoomType()) {
                         case DELUXE:
                             deluxeTotal++;
