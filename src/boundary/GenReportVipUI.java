@@ -11,6 +11,8 @@ import entity.Reservation;
 
 public class GenReportVipUI {
 
+    private static final String TITLE_DIVIDER = divider('=', 100);
+    private static final String ROW_DIVIDER = divider('-', 100);
     private final HotelController controller;
 
     public GenReportVipUI(HotelController controller) {
@@ -22,9 +24,9 @@ public class GenReportVipUI {
      * VIP demand compared with currently available rooms.
      */
     public void displayVipDemandAvailabilityReport() {
-        System.out.println("\n==============================================");
+        System.out.println("\n" + TITLE_DIVIDER);
         System.out.println("VIP Demand vs. Room Availability Summary");
-        System.out.println("==============================================");
+        System.out.println(TITLE_DIVIDER);
 
         System.out.printf(
                 "%-12s %-18s %-18s %-25s%n",
@@ -33,8 +35,7 @@ public class GenReportVipUI {
                 "Rooms Available",
                 "Assessment");
 
-        System.out.println(
-                "--------------------------------------------------------------------------");
+        System.out.println(ROW_DIVIDER);
 
         for (RoomType roomType : RoomType.values()) {
             int vipDemand = countVipDemand(roomType);
@@ -58,8 +59,7 @@ public class GenReportVipUI {
                     assessment);
         }
 
-        System.out.println(
-                "--------------------------------------------------------------------------");
+        System.out.println(ROW_DIVIDER);
     }
 
     /*
@@ -83,54 +83,70 @@ public class GenReportVipUI {
 
         sortCustomers(customers, sortChoice);
 
-        System.out.println("\n==============================================");
+        System.out.println("\n" + TITLE_DIVIDER);
         System.out.println("VIP Customer Summary Report");
-        System.out.println("==============================================");
+        System.out.println(TITLE_DIVIDER);
         System.out.println("Room Type Filter: "
                 + getRoomFilterLabel(roomTypeFilter));
         System.out.println("Name Filter: "
                 + getNameFilterLabel(nameFilter));
         System.out.println("Sort By: "
                 + getSortLabel(sortChoice));
-        System.out.println("==============================================");
+        System.out.println(TITLE_DIVIDER);
 
         System.out.printf(
-                "%-10s %-20s %-8s %-15s %-12s %-12s%n",
+                "%-10s %-20s %-8s %-15s %-12s %-12s %-10s%n",
                 "Position",
                 "Customer Name",
                 "Pax",
                 "Check-in",
                 "Nights",
-                "Room Type");
+                "Room Type",
+                "Quantity");
 
-        System.out.println(
-                "--------------------------------------------------------------------------");
+        System.out.println(ROW_DIVIDER);
 
-        for (int index = 0;
-             index < customers.size();
-             index++) {
+        boolean[] displayedCustomers = new boolean[customers.size()];
+        for (int index = 0; index < customers.size(); index++) {
 
             WaitingCustomer customer =
                     customers.get(index);
-
-            System.out.printf(
-                    "%-10d %-20s %-8d %-15s %-12d %-12s%n",
-                    customer.getWaitingPosition(),
-                    customer.getCustomerName(),
-                    customer.getPax(),
-                    customer.getCheckInDate(),
-                    customer.getNightsStayed(),
-                    customer.getRequestedRoomType()
-                            .getDisplayName());
+            if (!displayedCustomers[index]) {
+                int quantity = 1;
+                for (int candidateIndex = index + 1;
+                        candidateIndex < customers.size(); candidateIndex++) {
+                    if (sameRequirements(customer, customers.get(candidateIndex))) {
+                        quantity++;
+                        displayedCustomers[candidateIndex] = true;
+                    }
+                }
+                System.out.printf(
+                        "%-10d %-20s %-8d %-15s %-12d %-12s %-10d%n",
+                        customer.getWaitingPosition(),
+                        customer.getCustomerName(),
+                        customer.getPax(),
+                        customer.getCheckInDate(),
+                        customer.getNightsStayed(),
+                        customer.getRequestedRoomType().getDisplayName(),
+                        quantity);
+            }
         }
 
-        System.out.println(
-                "--------------------------------------------------------------------------");
+        System.out.println(ROW_DIVIDER);
 
         if (customers.isEmpty()) {
             System.out.println(
                     "No VIP customers match the selected criteria.");
         }
+    }
+
+    private boolean sameRequirements(WaitingCustomer first,
+                                     WaitingCustomer second) {
+        return first.getCustomerName().equalsIgnoreCase(second.getCustomerName())
+                && first.getPax() == second.getPax()
+                && first.getCheckInDate().equals(second.getCheckInDate())
+                && first.getNightsStayed() == second.getNightsStayed()
+                && first.getRequestedRoomType() == second.getRequestedRoomType();
     }
 
     private List<WaitingCustomer> getFilteredVipCustomers(
@@ -359,16 +375,16 @@ public class GenReportVipUI {
             }
         }
 
-        System.out.println("\n==============================================");
+        System.out.println("\n" + TITLE_DIVIDER);
         System.out.println("VIP Reservation History Report");
-        System.out.println("==============================================");
+        System.out.println(TITLE_DIVIDER);
         System.out.println("Room Type Filter: "
                 + getRoomFilterLabel(roomTypeFilter));
         System.out.println("Status Filter: "
                 + getReservationStatusLabel(checkedOutFilter));
         System.out.println(
                 "Sort By: Check-in Date -> Room Capacity -> Nights Stayed");
-        System.out.println("==============================================");
+        System.out.println(TITLE_DIVIDER);
 
         System.out.printf(
                 "%-20s %-8s %-15s %-15s %-12s %-12s %-10s%n",
@@ -380,8 +396,7 @@ public class GenReportVipUI {
                 "Room Type",
                 "Room");
 
-        System.out.println(
-                "--------------------------------------------------------------------------------");
+        System.out.println(ROW_DIVIDER);
 
         for (int index = 0;
              index < vipReservations.size();
@@ -405,8 +420,7 @@ public class GenReportVipUI {
                     reservation.getRoom().getRoomNumber());
         }
 
-        System.out.println(
-                "--------------------------------------------------------------------------------");
+        System.out.println(ROW_DIVIDER);
 
         if (vipReservations.isEmpty()) {
             System.out.println(
@@ -425,5 +439,13 @@ public class GenReportVipUI {
     }
 
     return "Active VIP Customers Only";
+    }
+
+    private static String divider(char character, int length) {
+        StringBuilder line = new StringBuilder(length);
+        for (int index = 0; index < length; index++) {
+            line.append(character);
+        }
+        return line.toString();
     }
 }

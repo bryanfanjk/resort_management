@@ -25,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 /* author: All Members have contributed in this controller. */
 public class HotelController {
 
+    private static final int WAITING_LIST_CAPACITY = 100;
     private final Room[] rooms;
     private final List<WaitingCustomer> waitingCustomers = new List<>(100);
     private final List<Reservation> activeReservations = new List<>(100);
@@ -52,10 +53,12 @@ public class HotelController {
 
     /* author: Fan Jin Kit & Ng Yung Onn*/
     public boolean customerExists(String name) {
-        return containsReservationCustomer(activeReservations, name)
-                || containsReservationCustomer(completedReservations, name)
-                || containsWaitingCustomer(name)
-                || containsVipWaitingCustomer(name);
+        return false;
+    }
+
+    /** Allows the user interface to validate a supplied VIP code. */
+    public boolean isValidVipCode(String vipCode) {
+        return vipController.isValidVipCode(vipCode);
     }
 
     /* author: Fan Jin Kit & Ng Yung Onn*/
@@ -67,26 +70,58 @@ public class HotelController {
     public WaitingCustomer addWalkInReservation(Customer customer,
             RoomType requestedRoomType,
             String vipCode) {
-        CustomerType customerType = vipController.isValidVipCode(vipCode)
-                ? CustomerType.VIP : CustomerType.STANDARD;
-        customer.setCustomerType(customerType);
+        return addWalkInReservations(new Customer[]{customer},
+                new RoomType[]{requestedRoomType}, vipCode).get(0);
+    }
 
-        String confCode = String.format("CONF%04d", confirmationCounter++);
-        customer.setConfirmationNumber(confCode);
-
-        WaitingCustomer waitingCustomer = new WaitingCustomer(customer,
-                requestedRoomType, getTotalWaitingCount() + 1);
-        if (customerType == CustomerType.VIP) {
-            vipController.addVip(waitingCustomer);
-        } else {
-            waitingCustomers.add(waitingCustomer);
+    /** Adds one waiting-list request for each room a customer requires. */
+    public List<WaitingCustomer> addWalkInReservations(Customer[] customers,
+            RoomType[] requestedRoomTypes, String vipCode) {
+        if (customers == null || requestedRoomTypes == null
+                || customers.length == 0
+                || customers.length != requestedRoomTypes.length) {
+            throw new IllegalArgumentException(
+                    "Each room must have a customer and room requirement.");
+        }
+        for (int index = 0; index < customers.length; index++) {
+            if (customers[index] == null || requestedRoomTypes[index] == null) {
+                throw new IllegalArgumentException(
+                        "Each room must have a customer and room requirement.");
+            }
         }
 
-        double rate = FrontDeskControl.getDailyRate(requestedRoomType);
-        GuestBillingInfo guestInfo = new GuestBillingInfo(confCode, customer, null, rate);
-        frontDeskControl.registerGuestInfo(guestInfo);
+        CustomerType customerType = vipController.isValidVipCode(vipCode)
+                ? CustomerType.VIP : CustomerType.STANDARD;
+        int queuedCustomers = customerType == CustomerType.VIP
+                ? vipController.waitingVipCount() : waitingCustomers.size();
+        if (queuedCustomers + customers.length > WAITING_LIST_CAPACITY) {
+            throw new IllegalStateException(
+                    "There is not enough space in the waiting list for all rooms.");
+        }
 
-        return waitingCustomer;
+        List<WaitingCustomer> addedCustomers = new List<>(customers.length);
+        for (int index = 0; index < customers.length; index++) {
+            Customer customer = customers[index];
+            RoomType requestedRoomType = requestedRoomTypes[index];
+            customer.setCustomerType(customerType);
+            String confCode = String.format("CONF%04d", confirmationCounter++);
+            customer.setConfirmationNumber(confCode);
+
+            WaitingCustomer waitingCustomer = new WaitingCustomer(customer,
+                    requestedRoomType, getTotalWaitingCount() + 1);
+            if (customerType == CustomerType.VIP) {
+                vipController.addVip(waitingCustomer);
+            } else {
+                waitingCustomers.add(waitingCustomer);
+            }
+
+            double rate = FrontDeskControl.getDailyRate(requestedRoomType);
+            GuestBillingInfo guestInfo = new GuestBillingInfo(confCode, customer,
+                    null, rate);
+            frontDeskControl.registerGuestInfo(guestInfo);
+            addedCustomers.add(waitingCustomer);
+        }
+        return addedCustomers;
     }
 
     /* author: Fan Jin Kit */
