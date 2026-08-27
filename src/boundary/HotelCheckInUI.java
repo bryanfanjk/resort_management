@@ -1,6 +1,5 @@
 package boundary;
 
-import java.util.Scanner;
 import adt.List;
 import control.HotelController;
 import entity.AssignmentResult;
@@ -10,14 +9,13 @@ import entity.Room;
 import entity.RoomType;
 import entity.WaitingCustomer;
 import util.DateValidator;
-import util.IntegerReader;
+import util.InputUtil;
 import entity.CustomerType;
 
 
 /** Staff console interface. */
 public class HotelCheckInUI {
 
-    private final Scanner scanner = new Scanner(System.in);
     private final HotelController controller;
 
     public HotelCheckInUI() {
@@ -40,9 +38,7 @@ public class HotelCheckInUI {
             System.out.println("4. View Room Status");
             System.out.println("5. Back to main menu");
             System.out.println("=======================================");
-            System.out.print("Enter your choice: ");
-            choice = IntegerReader.readInteger();
-
+            choice = InputUtil.readInt("Enter your choice: ", 1, 5);
             switch (choice) {
                 case 1: addWalkInReservation(); break;
                 case 2: checkOut(); break;
@@ -60,9 +56,7 @@ public class HotelCheckInUI {
         System.out.println("=================================");
         String name = readCustomerName();
         int roomCount = readPositiveInteger("Number of Rooms Required: ");
-        System.out.print(
-        "Enter VIP code, or press Enter for standard customer: ");
-        String vipCode = scanner.nextLine().trim();
+        String vipCode = InputUtil.readStringWithSkip("Enter VIP code, or press Enter for standard customer: ");
         if (!vipCode.isEmpty() && !controller.isValidVipCode(vipCode)) {
             System.out.println("\nInvalid VIP code. Returning to the previous menu.");
             return;
@@ -146,10 +140,9 @@ public class HotelCheckInUI {
 
     private String readCustomerName() {
         while (true) {
-            System.out.print("Customer Name: ");
-            String name = scanner.nextLine().trim();
-            if (name.isEmpty()) {
-                System.out.println("Customer name cannot be empty.");
+            String name = InputUtil.readString("Customer Name: ");
+            if (controller.customerExists(name)) {
+                System.out.println("Customer name already exists.");
             } else {
                 return name;
             }
@@ -157,33 +150,24 @@ public class HotelCheckInUI {
     }
 
     private int readPositiveInteger(String prompt) {
-        while (true) {
-            System.out.print(prompt);
-            int value = IntegerReader.readInteger();
-            if (value > 0) return value;
-            System.out.println("Value must be greater than 0.");
-        }
+        return InputUtil.readInt(prompt, 1, Integer.MAX_VALUE);
     }
-
+    
     private String readDate(String prompt) {
         while (true) {
-            System.out.print(prompt);
-            String date = scanner.nextLine().trim();
+            String date = InputUtil.readStringWithSkip(prompt);
             if (DateValidator.isValid(date)) return date;
             System.out.println("Invalid date. Please use DD/MM/YYYY.");
         }
     }
 
     private RoomType readRoomType() {
-        while (true) {
-            System.out.println("Desired Room Type: (1)Deluxe (2)Premium (3)Platinum");
-            System.out.print("Enter your choice: ");
-            switch (scanner.nextLine().trim()) {
-                case "1": return RoomType.DELUXE;
-                case "2": return RoomType.PREMIUM;
-                case "3": return RoomType.PLATINUM;
-                default: System.out.println("Please choose 1, 2, or 3.");
-            }
+        System.out.println("Desired Room Type: (1)Deluxe (2)Premium (3)Platinum");
+        int choice = InputUtil.readInt("Enter your choice: ", 1, 3);
+        switch (choice) {
+            case 1: return RoomType.DELUXE;
+            case 2: return RoomType.PREMIUM;
+            default: return RoomType.PLATINUM; // choice == 3
         }
     }
 }

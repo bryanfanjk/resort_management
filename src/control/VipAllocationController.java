@@ -5,6 +5,7 @@ import dao.VipCodeData;
 import entity.Customer;
 import entity.WaitingCustomer;
 
+//author: Ng Yung Onn
 public class VipAllocationController {
 
     private final VipList<WaitingCustomer> vipList;
