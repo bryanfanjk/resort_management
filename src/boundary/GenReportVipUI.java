@@ -37,15 +37,51 @@ public class GenReportVipUI {
 
         System.out.println(ROW_DIVIDER);
 
-        for (RoomType roomType : RoomType.values()) {
-            int vipDemand = countVipDemand(roomType);
-            int availableRooms = countAvailableRooms(roomType);
+        RoomType[] types = RoomType.values();
+        int[] demand = new int[types.length];
+        int[] available = new int[types.length];
+        int[] gap = new int[types.length];
 
+        for (int i = 0; i < types.length; i++) {
+            demand[i] = countVipDemand(types[i]);
+            available[i] = countAvailableRooms(types[i]);
+            gap[i] = demand[i] - available[i];
+        }
+
+        // Selection sort the rows by gap, descending (worst shortage first) -
+        // same selection-sort style already used in sortCustomers() above
+        // and HotelController.getAllReservationsSorted().
+        for (int i = 0; i < types.length - 1; i++) {
+            int selectedIndex = i;
+            for (int j = i + 1; j < types.length; j++) {
+                if (gap[j] > gap[selectedIndex]) {
+                    selectedIndex = j;
+                }
+            }
+            if (selectedIndex != i) {
+                RoomType tempType = types[i];
+                types[i] = types[selectedIndex];
+                types[selectedIndex] = tempType;
+
+                int tempDemand = demand[i];
+                demand[i] = demand[selectedIndex];
+                demand[selectedIndex] = tempDemand;
+
+                int tempAvailable = available[i];
+                available[i] = available[selectedIndex];
+                available[selectedIndex] = tempAvailable;
+
+                int tempGap = gap[i];
+                gap[i] = gap[selectedIndex];
+                gap[selectedIndex] = tempGap;
+            }
+        }
+
+        for (int i = 0; i < types.length; i++) {
             String assessment;
-
-            if (vipDemand > availableRooms) {
+            if (gap[i] > 0) {
                 assessment = "Demand exceeds supply";
-            } else if (vipDemand == availableRooms) {
+            } else if (gap[i] == 0) {
                 assessment = "Balanced";
             } else {
                 assessment = "Supply exceeds demand";
@@ -53,9 +89,9 @@ public class GenReportVipUI {
 
             System.out.printf(
                     "%-12s %-18d %-18d %-25s%n",
-                    roomType.getDisplayName(),
-                    vipDemand,
-                    availableRooms,
+                    types[i].getDisplayName(),
+                    demand[i],
+                    available[i],
                     assessment);
         }
 
