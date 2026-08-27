@@ -34,7 +34,8 @@ public class MainMenu {
         this.housekeepingUI = new HousekeepingUI(housekeepingController,
                 housekeepingStack,
                 roomsList,
-                authController);
+                authController,
+                hotelController);
     }
 
     public void menu() {

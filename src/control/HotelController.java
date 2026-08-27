@@ -10,7 +10,6 @@ import entity.AssignmentResult;
 import entity.Customer;
 import entity.CustomerType;
 import entity.GuestBillingInfo;
-import entity.HousekeepingStatus;
 import entity.Reservation;
 import entity.Room;
 import entity.RoomStatus;
@@ -130,7 +129,7 @@ public class HotelController {
      */
     public boolean checkOut(int roomNumber, String checkOutDate) {
         Room room = findRoom(roomNumber);
-        if (room == null || room.getStatus() != RoomStatus.OCCUPIED) {
+        if (room == null || room.getOccupancyStatus() != RoomStatus.OCCUPIED) {
             return false;
         }
 
@@ -140,12 +139,61 @@ public class HotelController {
         }
         reservation.getCustomer().setCheckOutDate(checkOutDate);
         completedReservations.add(reservation);
-        room.setStatus(RoomStatus.AVAILABLE);
-        room.setHousekeepingStatus(HousekeepingStatus.DIRTY);
+        room.setOccupancyStatus(RoomStatus.UNAVAILABLE);
+        room.setRoomStatus(RoomStatus.DIRTY);
         room.setCurrentGuestConfirmation(null);
 
         frontDeskControl.updateGuestCheckout(reservation.getConfirmationNumber(), checkOutDate);
         return true;
+    }
+
+    /* author: Ho Jia Ming */
+    public boolean requestLateCheckout(int roomNumber) {
+        Room room = findRoom(roomNumber);
+        if (room == null) {
+            System.out.println("ERROR: Room number not found.");
+            return false;
+        }
+
+        if (room.getOccupancyStatus() != RoomStatus.UNAVAILABLE) {
+            System.out.println("ERROR: Late check-out rollback only applies to a room that has "
+                    + "just been checked out and is still being cleaned.");
+            return false;
+        }
+
+        int reservationIndex = findLastCompletedReservationIndexForRoom(roomNumber);
+        if (reservationIndex == -1) {
+            System.out.println("ERROR: No recent checkout found for this room.");
+            return false;
+        }
+
+        Reservation reservation = completedReservations.get(reservationIndex);
+        if (reservation.getCustomer().getCustomerType() != CustomerType.VIP) {
+            System.out.println("ERROR: Late check-out rollback is only available to VIP guests.");
+            return false;
+        }
+
+        completedReservations.remove(reservationIndex);
+        reservation.getCustomer().setCheckOutDate(null);
+        activeReservations.add(reservation);
+
+        room.setRoomStatus(RoomStatus.READY);
+        room.setOccupancyStatus(RoomStatus.OCCUPIED);
+        room.setCurrentGuestConfirmation(reservation.getCustomer().getCustomerName());
+
+        frontDeskControl.updateGuestRoomAssignment(reservation.getConfirmationNumber(), room);
+        return true;
+    }
+
+    /* author: Ho Jia Ming */
+    private int findLastCompletedReservationIndexForRoom(int roomNumber) {
+        for (int i = completedReservations.size() - 1; i >= 0; i--) {
+            Reservation reservation = completedReservations.get(i);
+            if (reservation.getRoom() != null && reservation.getRoom().getRoomNumber() == roomNumber) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /* author: Fan Jin Kit & Ng Yung Onn*/
@@ -186,7 +234,7 @@ public class HotelController {
     /* author: Fan Jin Kit */
     public Room findAvailableRoom(int pax, RoomType roomType) {
         for (Room room : rooms) {
-            if (room != null && room.getStatus() == RoomStatus.AVAILABLE
+            if (room != null && room.getOccupancyStatus() == RoomStatus.AVAILABLE
                     && room.getRoomType() == roomType
                     && room.getCapacity() >= pax) {
                 return room;
@@ -340,7 +388,7 @@ public class HotelController {
     private AssignmentResult approveCustomer(
             WaitingCustomer customer, Room room,
             List<WaitingCustomer> skippedCustomers) {
-        room.setStatus(RoomStatus.OCCUPIED);
+        room.setOccupancyStatus(RoomStatus.OCCUPIED);
         room.setCurrentGuestConfirmation(customer.getCustomerName());
         Reservation reservation = new Reservation(customer, room,
                 customer.getRequestedRoomType(), customer.getConfirmationNumber());
@@ -367,7 +415,7 @@ public class HotelController {
             if (reservation.getCustomer() != null) {
                 reservation.getCustomer().setConfirmationNumber(confCode);
             }
-            reservation.getRoom().setStatus(RoomStatus.OCCUPIED);
+            reservation.getRoom().setOccupancyStatus(RoomStatus.OCCUPIED);
             reservation.getRoom().setCurrentGuestConfirmation(reservation.getCustomer().getCustomerName());
             activeReservations.add(reservation);
 

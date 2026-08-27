@@ -128,7 +128,7 @@ public class HotelCheckInUI {
         for (Room room : controller.getRooms()) {
             System.out.printf("%-10d %-12s %-10d %-12s%n",
                     room.getRoomNumber(), room.getRoomType().getDisplayName(),
-                    room.getCapacity(), room.getStatus().getDisplayName());
+                    room.getCapacity(), room.getOccupancyStatus().getLabel());
         }
     }
 

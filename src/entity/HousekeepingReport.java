@@ -30,7 +30,7 @@ public class HousekeepingReport {
         int cleanedCount = 0;
         for (int i = 0; i < rooms.size(); i++) {
             Room room = rooms.get(i);
-            if (room.getHousekeepingStatus() == HousekeepingStatus.READY) {
+            if (room.getRoomStatus() == RoomStatus.READY) {
                 cleanedCount++;
             }
         }
@@ -67,21 +67,21 @@ public class HousekeepingReport {
     }
 
     // Statistical breakdown by status
-    public int getRoomCountByStatus(HousekeepingStatus status) {
+    public int getRoomCountByStatus(RoomStatus status) {
         int count = 0;
         for (int i = 0; i < rooms.size(); i++) {
-            if (rooms.get(i).getHousekeepingStatus() == status) {
+            if (rooms.get(i).getRoomStatus() == status) {
                 count++;
             }
         }
         return count;
     }
 
-    // Statistical breakdown by supervisor
-    public int getLogCountBySupervisor(String supervisor) {
+    // Statistical breakdown by staff member
+    public int getLogCountByStaff(String staffName) {
         int count = 0;
         for (int i = 0; i < logs.size(); i++) {
-            if (logs.get(i).getSupervisorName().equalsIgnoreCase(supervisor)) {
+            if (logs.get(i).getStaffName().equalsIgnoreCase(staffName)) {
                 count++;
             }
         }

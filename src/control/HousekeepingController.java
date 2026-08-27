@@ -3,7 +3,7 @@ package control;
 import adt.LinkedStack;
 import adt.ListInterface;
 import entity.HousekeepingLog;
-import entity.HousekeepingStatus;
+import entity.RoomStatus;
 import entity.Room;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,8 +23,8 @@ public class HousekeepingController {
         this.authController = authController;
     }
 
-    public HousekeepingLog updateRoomStatus(int roomNumber, HousekeepingStatus nextStatus,
-            String supervisor) {
+    public HousekeepingLog updateRoomStatus(int roomNumber, RoomStatus nextStatus,
+            String staffName) {
         // Check if user is logged in
         if (!authController.isLoggedIn()) {
             System.out.println("ERROR: Please login first.");
@@ -36,7 +36,7 @@ public class HousekeepingController {
             return null;
         }
 
-        HousekeepingStatus oldStatus = room.getHousekeepingStatus();
+        RoomStatus oldStatus = room.getRoomStatus();
 
         // Check status transition rules
         if (!oldStatus.canTransitionTo(nextStatus)) {
@@ -61,19 +61,19 @@ public class HousekeepingController {
         }
 
         // Update room status
-        room.setHousekeepingStatus(nextStatus);
+        room.setRoomStatus(nextStatus);
 
         String timestamp = new SimpleDateFormat("HH:mm:ss").format(new Date());
         HousekeepingLog log = new HousekeepingLog(roomNumber, oldStatus, nextStatus,
-                supervisor, timestamp);
+                staffName, timestamp);
         housekeepingStack.push(log);
 
         return log;
     }
 
     // For supervisor to approve/reject cleaning
-    public HousekeepingLog approveCleaning(int roomNumber, HousekeepingStatus newStatus,
-            String supervisor) {
+    public HousekeepingLog approveCleaning(int roomNumber, RoomStatus newStatus,
+            String staffName) {
         if (!authController.isSupervisor()) {
             System.out.println("ERROR: Only supervisors can approve or reject cleaning.");
             return null;
@@ -84,20 +84,20 @@ public class HousekeepingController {
             return null;
         }
 
-        HousekeepingStatus currentStatus = room.getHousekeepingStatus();
+        RoomStatus currentStatus = room.getRoomStatus();
 
         // Supervisor can only change from CLEANING_IN_PROGRESS to INSPECTED or reject back to DIRTY
-        if (currentStatus != HousekeepingStatus.CLEANING_IN_PROGRESS) {
+        if (currentStatus != RoomStatus.CLEANING_IN_PROGRESS) {
             System.out.println("ERROR: Room must be in 'Cleaning In Progress' status for supervisor action.");
             return null;
         }
 
-        if (newStatus != HousekeepingStatus.INSPECTED && newStatus != HousekeepingStatus.DIRTY) {
+        if (newStatus != RoomStatus.INSPECTED && newStatus != RoomStatus.DIRTY) {
             System.out.println("ERROR: Supervisor can only set status to 'Inspected' (approve) or 'Dirty' (reject).");
             return null;
         }
 
-        return updateRoomStatus(roomNumber, newStatus, supervisor);
+        return updateRoomStatus(roomNumber, newStatus, staffName);
     }
 
     public HousekeepingLog rollbackLastAction() {
@@ -108,7 +108,7 @@ public class HousekeepingController {
         HousekeepingLog log = housekeepingStack.pop();
         Room room = findRoom(log.getRoomNumber());
         if (room != null) {
-            room.setHousekeepingStatus(log.getOldStatus());
+            room.setRoomStatus(log.getOldStatus());
             return log;
         }
         return null;
@@ -120,10 +120,24 @@ public class HousekeepingController {
             HousekeepingLog log = poppedLogs.get(i);
             Room room = findRoom(log.getRoomNumber());
             if (room != null) {
-                room.setHousekeepingStatus(log.getOldStatus());
+                room.setRoomStatus(log.getOldStatus());
             }
         }
         return poppedLogs;
+    }
+
+    public void purgeLogsForRoom(int roomNumber) {
+        ListInterface<HousekeepingLog> keep = new adt.List<>(housekeepingStack.getSize());
+        while (!housekeepingStack.isEmpty()) {
+            HousekeepingLog log = housekeepingStack.pop();
+            if (log.getRoomNumber() != roomNumber) {
+                keep.add(log);
+            }
+        }
+
+        for (int i = keep.size() - 1; i >= 0; i--) {
+            housekeepingStack.push(keep.get(i));
+        }
     }
 
     private Room findRoom(int roomNumber) {

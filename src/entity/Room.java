@@ -8,8 +8,8 @@ public class Room {
     private int roomNumber;
     private int capacity;
     private RoomType roomType;
-    private RoomStatus status;
-    private HousekeepingStatus housekeepingStatus;
+    private RoomStatus occupancyStatus;
+    private RoomStatus roomStatus;
     private String currentGuestConfirmation;
 
     
@@ -21,8 +21,8 @@ public class Room {
         this.roomNumber = roomNumber;
         this.capacity = capacity;
         this.roomType = roomType;
-        this.status = RoomStatus.AVAILABLE;
-        this.housekeepingStatus = HousekeepingStatus.READY;
+        this.occupancyStatus = RoomStatus.AVAILABLE;
+        this.roomStatus = RoomStatus.READY;
         this.currentGuestConfirmation = null;
     }
 
@@ -39,31 +39,45 @@ public class Room {
     }
 
     public boolean isAvailable() {
-        return status == RoomStatus.AVAILABLE;
+        return occupancyStatus == RoomStatus.AVAILABLE;
     }
 
     public void setAvailable(boolean available) {
-        this.status = available ? RoomStatus.AVAILABLE : RoomStatus.OCCUPIED;
+        this.occupancyStatus = available ? RoomStatus.AVAILABLE : RoomStatus.OCCUPIED;
     }
 
-    public RoomStatus getStatus() {
-        return status;
+    public RoomStatus getOccupancyStatus() {
+        return occupancyStatus;
     }
 
-    public void setStatus(RoomStatus status) {
-        this.status = status;
+    public void setOccupancyStatus(RoomStatus occupancyStatus) {
+        this.occupancyStatus = occupancyStatus;
     }
 
-    public HousekeepingStatus getHousekeepingStatus() {
-        return housekeepingStatus;
+    public RoomStatus getRoomStatus() {
+        return roomStatus;
     }
 
-    public void setHousekeepingStatus(HousekeepingStatus housekeepingStatus) {
-        this.housekeepingStatus = housekeepingStatus;
+    /**
+     * Sets the housekeeping status and keeps occupancy in sync:
+     * reaching READY makes the room bookable (AVAILABLE); any earlier
+     * housekeeping step (DIRTY/CLEANING_IN_PROGRESS/INSPECTED) keeps it
+     * UNAVAILABLE. Does nothing to occupancy while a guest is checked in.
+     */
+    public void setRoomStatus(RoomStatus roomStatus) {
+        this.roomStatus = roomStatus;
+        if (occupancyStatus != RoomStatus.OCCUPIED) {
+            occupancyStatus = (roomStatus == RoomStatus.READY)
+                    ? RoomStatus.AVAILABLE : RoomStatus.UNAVAILABLE;
+        }
+    }
+
+    public boolean isOccupied() {
+        return occupancyStatus == RoomStatus.OCCUPIED;
     }
 
     public boolean isVacant() {
-        return status == RoomStatus.AVAILABLE;
+        return occupancyStatus != RoomStatus.OCCUPIED;
     }
 
     public String getCurrentGuestConfirmation() {
@@ -79,7 +93,7 @@ public class Room {
         return "Room " + roomNumber +
                " | Type: " + roomType.getDisplayName() +
                " | Capacity: " + capacity +
-               " | Status: " + status.getDisplayName() +
-               " | Housekeeping: " + housekeepingStatus.getLabel();
+               " | Status: " + occupancyStatus.getLabel() +
+               " | Housekeeping: " + roomStatus.getLabel();
     }
 }
