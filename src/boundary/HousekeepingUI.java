@@ -4,6 +4,7 @@ import adt.LinkedStack;
 import adt.List;
 import adt.ListInterface;
 import control.AuthController;
+import control.HotelController;
 import control.HousekeepingController;
 import control.HousekeepingReportController;
 import entity.HousekeepingLog;
@@ -21,15 +22,18 @@ public class HousekeepingUI {
     private final ListInterface<Room> rooms;
     private final AuthController authController;
     private final HousekeepingReportController reportController;
+    private final HotelController hotelController;
 
     public HousekeepingUI(HousekeepingController controller,
             LinkedStack<HousekeepingLog> stack,
             ListInterface<Room> rooms,
-            AuthController authController) {
+            AuthController authController,
+            HotelController hotelController) {
         this.controller = controller;
         this.stack = stack;
         this.rooms = rooms;
         this.authController = authController;
+        this.hotelController = hotelController;
         // Pass the stack directly - will convert to list when needed
         this.reportController = new HousekeepingReportController(stack, rooms);
     }
@@ -50,10 +54,11 @@ public class HousekeepingUI {
             System.out.println("5. View Current Housekeeping Rollback Stack");
             System.out.println("6. View Room Cleaning Status Registry");
             System.out.println("7. View Housekeeping Reports");
-            System.out.println("8. Logout");
-            System.out.println("9. Back to Main Menu");
+            System.out.println("8. Process VIP Late Check-Out (Rollback Room to Occupied)");
+            System.out.println("9. Logout");
+            System.out.println("10. Back to Main Menu");
 
-            int choice = InputUtil.readInt("Enter choice (1-9): ", 1, 9);
+            int choice = InputUtil.readInt("Enter choice (1-10): ", 1, 10);
             switch (choice) {
                 case 1:
                     updateStatus();
@@ -77,9 +82,12 @@ public class HousekeepingUI {
                     reportMenu();
                     break;
                 case 8:
+                    processVipLateCheckout();
+                    break;
+                case 9:
                     logout();
                     return;
-                case 9:
+                case 10:
                     logout();
                     return;
             }
@@ -187,6 +195,23 @@ public class HousekeepingUI {
             System.out.println(log);
         } else {
             System.out.println("ERROR: Failed to update room status.");
+        }
+        System.out.println("-".repeat(50));
+        InputUtil.pressEnterToContinue();
+    }
+
+    private void processVipLateCheckout() {
+        System.out.println("\n--- VIP Late Check-Out Request ---");
+        int roomNum = InputUtil.readIntWithExit("Enter Room Number (101-304, or -1 to cancel): ", 101, 304);
+        if (roomNum == -1) {
+            System.out.println("Operation cancelled.");
+            InputUtil.pressEnterToContinue();
+            return;
+        }
+
+        System.out.println("-".repeat(50));
+        if (hotelController.requestLateCheckout(roomNum)) {
+            System.out.println("SUCCESS: Room " + roomNum + " has been rolled back to Occupied.");
         }
         System.out.println("-".repeat(50));
         InputUtil.pressEnterToContinue();
