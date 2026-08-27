@@ -6,14 +6,14 @@ import util.InputUtil;
 
 //author: Ng Yung Onn
 
-public class VipAllocationUI {
+public class ReportsUI {
 
     private final GenReportVipUI reportUI;
     private final GenerateReportUI generalReportUI;
 
     private boolean filterExitSelected;
 
-    public VipAllocationUI(HotelController controller) {
+    public ReportsUI(HotelController controller) {
         this.reportUI = new GenReportVipUI(controller);
         this.generalReportUI = new GenerateReportUI(controller);
     }
@@ -182,43 +182,55 @@ private int readGeneralReservationFilter() {
     }
     
     private void viewVipReservationHistoryReport() {
-    RoomType roomTypeFilter =
-            readReservationRoomTypeFilter();
+    // Show the full, unfiltered history first.
+    reportUI.displayVipReservationHistoryReport(null, null);
 
-    if (filterExitSelected) {
-        return;
-    }
+        while (true) {
+            RoomType roomTypeFilter =
+                    readReservationRoomTypeFilter();
 
-    Boolean checkedOutFilter =
-            readReservationStatusFilter();
+            if (filterExitSelected) {
+                return;
+            }
 
-    if (checkedOutFilter == null
-            && filterExitSelected) {
-        return;
-    }
+            Boolean checkedOutFilter =
+                    readReservationStatusFilter();
 
-    reportUI.displayVipReservationHistoryReport(
-            roomTypeFilter,
-            checkedOutFilter);
+            if (checkedOutFilter == null
+                    && filterExitSelected) {
+                return;
+            }
+
+            reportUI.displayVipReservationHistoryReport(
+                    roomTypeFilter,
+                    checkedOutFilter);
+        }
     }
 
     private void viewVipCustomerReport() {
-        RoomType roomTypeFilter =
-                readRoomTypeFilter();
+        // Show the full, unfiltered list first - matches how
+        // HotelCheckInUI's report menus already behave.
+        reportUI.displayVipCustomerReport(null, "", 1);
 
-        if (filterExitSelected) {
-            return;
+        while (true) {
+            RoomType roomTypeFilter =
+                    readRoomTypeFilter();
+
+            if (filterExitSelected) {
+                return;
+            }
+
+            String nameFilter =
+                    InputUtil.readStringWithSkip("Search customer name, or press Enter for all: ");
+
+            int sortChoice =
+                    readSortChoice();
+
+            reportUI.displayVipCustomerReport(
+                    roomTypeFilter,
+                    nameFilter,
+                    sortChoice);
         }
-
-        String nameFilter = InputUtil.readStringWithSkip("Search customer name, or press Enter for all: ");
-
-        int sortChoice =
-                readSortChoice();
-
-        reportUI.displayVipCustomerReport(
-                roomTypeFilter,
-                nameFilter,
-                sortChoice);
     }
 
     private RoomType readRoomTypeFilter() {

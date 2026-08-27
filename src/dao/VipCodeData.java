@@ -20,7 +20,9 @@ public final class VipCodeData {
         return new String[]{
             "VIP100",
             "VIP200",
-            "VIP300"
+            "VIP300",
+            "VIP400",
+            "VIP500"
         };
     }
 }

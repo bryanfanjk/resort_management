@@ -12,12 +12,18 @@ public final class StandardWaitingCustomerData {
 
     public static WaitingCustomer[] createNew() {
         return new WaitingCustomer[]{
-            createWaitingCustomer("Daniel Kumar", 2, "14/08/2026", 2,
+            createWaitingCustomer("Daniel Kumar", 7, "14/08/2026", 2,
                     RoomType.DELUXE),
             createWaitingCustomer("Evelyn Tan", 3, "14/08/2026", 3,
                     RoomType.PREMIUM),
             createWaitingCustomer("Farid Ismail", 1, "15/08/2026", 1,
-                    RoomType.DELUXE)
+                    RoomType.DELUXE),
+            createWaitingCustomer("Fas Isma", 5, "16/08/2026", 1,
+                    RoomType.DELUXE),
+            createWaitingCustomer("Farid Ismail", 2, "15/08/2026", 1,
+                    RoomType.DELUXE),
+            createWaitingCustomer("Farid Ismail", 3, "19/08/2026", 5,
+                    RoomType.PREMIUM)
         };
     }
 

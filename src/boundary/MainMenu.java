@@ -18,8 +18,8 @@ public class MainMenu {
     private final HousekeepingController housekeepingController;
     private final HotelCheckInUI checkInUI;
     private final HousekeepingUI housekeepingUI;
-    private final VipAllocationUI vipAllocationUI =
-        new VipAllocationUI(hotelController);
+    private final ReportsUI vipAllocationUI =
+        new ReportsUI(hotelController);
 
     public MainMenu() {
         Room[] roomsArray = hotelController.getRooms();
