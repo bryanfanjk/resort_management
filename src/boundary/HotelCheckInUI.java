@@ -1,5 +1,6 @@
 package boundary;
 
+import java.util.Scanner;
 import control.HotelController;
 import entity.AssignmentResult;
 import entity.Customer;
@@ -8,12 +9,14 @@ import entity.Room;
 import entity.RoomType;
 import entity.WaitingCustomer;
 import util.DateValidator;
-import util.InputUtil;
+import util.IntegerReader;
 import entity.CustomerType;
 
 
 /** Staff console interface. */
 public class HotelCheckInUI {
+
+    private final Scanner scanner = new Scanner(System.in);
     private final HotelController controller;
     private final GenerateReportUI reportUI;
 
@@ -39,7 +42,8 @@ public class HotelCheckInUI {
             System.out.println("5. View Reports");
             System.out.println("6. Back to main menu");
             System.out.println("=======================================");
-            choice = InputUtil.readInt("Enter your choice: ", 1, 6);
+            System.out.print("Enter your choice: ");
+            choice = IntegerReader.readInteger();
 
             switch (choice) {
                 case 1: addWalkInReservation(); break;
@@ -62,7 +66,9 @@ public class HotelCheckInUI {
         String checkInDate = readDate("Check-in Date (DD/MM/YYYY): ");
         int nightsStayed = readPositiveInteger("Nights Stayed: ");
         RoomType roomType = readRoomType();
-        String vipCode = InputUtil.readStringWithSkip("Enter VIP code, or press Enter for standard customer: ");
+        System.out.print(
+        "Enter VIP code, or press Enter for standard customer: ");
+        String vipCode = scanner.nextLine().trim();
         
         Customer customer = new Customer(
         name,
@@ -138,7 +144,8 @@ public class HotelCheckInUI {
         System.out.println("1. All Reservations Report");
         System.out.println("2. Standard Customers Waiting List Report");
         System.out.println("3. Back");
-        switch (InputUtil.readInt("Enter your choice: ", 1, 3)) {
+        System.out.print("Enter your choice: ");
+        switch (IntegerReader.readInteger()) {
             case 1: viewFilteredReservationReport(); break;
             case 2: viewFilteredWaitingReport(); break;
             default: break;
@@ -165,6 +172,7 @@ public class HotelCheckInUI {
     }
 
     private int readReservationFilterChoice() {
+        while (true) {
             System.out.println("\nFilter all reservations by:");
             System.out.println("1. Deluxe");
             System.out.println("2. Premium");
@@ -174,7 +182,16 @@ public class HotelCheckInUI {
             System.out.println("6. Active Customers");
             System.out.println("7. Back");
             System.out.print("Enter your choice: ");
-            return InputUtil.readInt("Enter your choice: ", 1, 7);
+            try {
+                int choice = Integer.parseInt(scanner.nextLine().trim());
+                if (choice >= 1 && choice <= 7) {
+                    return choice;
+                }
+            } catch (NumberFormatException exception) {
+                // Show the same validation message below.
+            }
+            System.out.println("Please choose 1, 2, 3, 4, 5, 6, or 7.");
+        }
     }
 
     private void viewFilteredWaitingReport() {
@@ -193,19 +210,24 @@ public class HotelCheckInUI {
     /** Returns null for All; the flag distinguishes All from Back. */
     private RoomType readReportFilter() {
         lastFilterWasExit = false;
-        System.out.println("\nFilter by room type:");
-        System.out.println("1. Deluxe");
-        System.out.println("2. Premium");
-        System.out.println("3. Platinum");
-        System.out.println("4. All");
-        System.out.println("5. Back");
-        int choice = InputUtil.readInt("Enter your choice: ", 1, 5);
-        switch (choice) {
-            case 1: return RoomType.DELUXE;
-            case 2: return RoomType.PREMIUM;
-            case 3: return RoomType.PLATINUM;
-            case 5: lastFilterWasExit = true; return null;
-            default: return null; // choice == 4
+        while (true) {
+            System.out.println("\nFilter by room type:");
+            System.out.println("1. Deluxe");
+            System.out.println("2. Premium");
+            System.out.println("3. Platinum");
+            System.out.println("4. All");
+            System.out.println("5. Back");
+            System.out.print("Enter your choice: ");
+            switch (scanner.nextLine().trim()) {
+                case "1": return RoomType.DELUXE;
+                case "2": return RoomType.PREMIUM;
+                case "3": return RoomType.PLATINUM;
+                case "4": return null;
+                case "5":
+                    lastFilterWasExit = true;
+                    return null;
+                default: System.out.println("Please choose 1, 2, 3, 4, or 5.");
+            }
         }
     }
 
@@ -217,8 +239,11 @@ public class HotelCheckInUI {
 
     private String readCustomerName() {
         while (true) {
-            String name = InputUtil.readString("Customer Name: ");
-            if (controller.customerExists(name)) {
+            System.out.print("Customer Name: ");
+            String name = scanner.nextLine().trim();
+            if (name.isEmpty()) {
+                System.out.println("Customer name cannot be empty.");
+            } else if (controller.customerExists(name)) {
                 System.out.println("Customer name already exists.");
             } else {
                 return name;
@@ -227,24 +252,33 @@ public class HotelCheckInUI {
     }
 
     private int readPositiveInteger(String prompt) {
-        return InputUtil.readInt(prompt, 1, Integer.MAX_VALUE);
+        while (true) {
+            System.out.print(prompt);
+            int value = IntegerReader.readInteger();
+            if (value > 0) return value;
+            System.out.println("Value must be greater than 0.");
+        }
     }
 
     private String readDate(String prompt) {
         while (true) {
-            String date = InputUtil.readStringWithSkip(prompt);
+            System.out.print(prompt);
+            String date = scanner.nextLine().trim();
             if (DateValidator.isValid(date)) return date;
             System.out.println("Invalid date. Please use DD/MM/YYYY.");
         }
     }
 
     private RoomType readRoomType() {
-        System.out.println("Desired Room Type: (1)Deluxe (2)Premium (3)Platinum");
-        int choice = InputUtil.readInt("Enter your choice: ", 1, 3);
-        switch (choice) {
-            case 1: return RoomType.DELUXE;
-            case 2: return RoomType.PREMIUM;
-            default: return RoomType.PLATINUM; // choice == 3
+        while (true) {
+            System.out.println("Desired Room Type: (1)Deluxe (2)Premium (3)Platinum");
+            System.out.print("Enter your choice: ");
+            switch (scanner.nextLine().trim()) {
+                case "1": return RoomType.DELUXE;
+                case "2": return RoomType.PREMIUM;
+                case "3": return RoomType.PLATINUM;
+                default: System.out.println("Please choose 1, 2, or 3.");
+            }
         }
     }
 }
