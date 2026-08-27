@@ -2,14 +2,11 @@ package boundary;
 
 import control.HotelController;
 import entity.RoomType;
-import java.util.Scanner;
-import util.IntegerReader;
+import util.InputUtil;
 
 //author: Ng Yung Onn
 
 public class VipAllocationUI {
-
-    private final Scanner scanner = new Scanner(System.in);
     private final GenReportVipUI reportUI;
 
     private boolean filterExitSelected;
@@ -29,9 +26,7 @@ public class VipAllocationUI {
             System.out.println("2. VIP Demand vs. Room Availability Summary");
             System.out.println("3. VIP Reservation History Report");
             System.out.println("4. Back to Main Menu");
-            System.out.print("Enter your choice: ");
-
-            choice = IntegerReader.readInteger();
+            choice = InputUtil.readInt("Enter your choice: ", 1, 4);
 
             switch (choice) {
                 case 1:
@@ -68,10 +63,7 @@ public class VipAllocationUI {
             System.out.println("3. Platinum");
             System.out.println("4. All Room Types");
             System.out.println("5. Back");
-            System.out.print("Enter your choice: ");
-
-            int choice =
-                    IntegerReader.readInteger();
+            int choice = InputUtil.readInt("Enter your choice: ", 1, 5);
 
             switch (choice) {
                 case 1:
@@ -108,11 +100,7 @@ public class VipAllocationUI {
         System.out.println("2. Active VIP Customers");
         System.out.println("3. Checked-out VIP Customers");
         System.out.println("4. Back");
-        System.out.print("Enter your choice: ");
-
-        int choice =
-                IntegerReader.readInteger();
-
+        int choice = InputUtil.readInt("Enter your choice: ", 1, 4);
         switch (choice) {
             case 1:
                 return null;
@@ -163,14 +151,9 @@ public class VipAllocationUI {
             return;
         }
 
-        System.out.print(
-                "Search customer name, or press Enter for all: ");
+        String nameFilter = InputUtil.readStringWithSkip("Search customer name, or press Enter for all: ");
 
-        String nameFilter =
-                scanner.nextLine().trim();
-
-        int sortChoice =
-                readSortChoice();
+        int sortChoice = readSortChoice();
 
         reportUI.displayVipCustomerReport(
                 roomTypeFilter,
@@ -190,11 +173,7 @@ public class VipAllocationUI {
             System.out.println("3. Platinum");
             System.out.println("4. All Room Types");
             System.out.println("5. Back");
-            System.out.print("Enter your choice: ");
-
-            int choice =
-                    IntegerReader.readInteger();
-
+            int choice = InputUtil.readInt("Enter your choice: ", 1, 5);
             switch (choice) {
                 case 1:
                     return RoomType.DELUXE;
@@ -218,25 +197,12 @@ public class VipAllocationUI {
             }
         }
     }
-
     private int readSortChoice() {
-        while (true) {
-            System.out.println("\nSort VIP report by:");
-            System.out.println("1. Waiting Position");
-            System.out.println("2. Customer Name");
-            System.out.println("3. Number of Guests");
-            System.out.println("4. Nights Stayed");
-            System.out.print("Enter your choice: ");
-
-            int choice =
-                    IntegerReader.readInteger();
-
-            if (choice >= 1 && choice <= 4) {
-                return choice;
-            }
-
-            System.out.println(
-                    "Please choose 1, 2, 3, or 4.");
-        }
+        System.out.println("\nSort VIP report by:");
+        System.out.println("1. Waiting Position");
+        System.out.println("2. Customer Name");
+        System.out.println("3. Number of Guests");
+        System.out.println("4. Nights Stayed");
+        return InputUtil.readInt("Enter your choice: ", 1, 4);
     }
 }
