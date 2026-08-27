@@ -24,7 +24,7 @@ public class HousekeepingController {
     }
 
     public HousekeepingLog updateRoomStatus(int roomNumber, RoomStatus nextStatus,
-            String supervisor) {
+            String staffName) {
         // Check if user is logged in
         if (!authController.isLoggedIn()) {
             System.out.println("ERROR: Please login first.");
@@ -65,7 +65,7 @@ public class HousekeepingController {
 
         String timestamp = new SimpleDateFormat("HH:mm:ss").format(new Date());
         HousekeepingLog log = new HousekeepingLog(roomNumber, oldStatus, nextStatus,
-                supervisor, timestamp);
+                staffName, timestamp);
         housekeepingStack.push(log);
 
         return log;
@@ -73,7 +73,7 @@ public class HousekeepingController {
 
     // For supervisor to approve/reject cleaning
     public HousekeepingLog approveCleaning(int roomNumber, RoomStatus newStatus,
-            String supervisor) {
+            String staffName) {
         if (!authController.isSupervisor()) {
             System.out.println("ERROR: Only supervisors can approve or reject cleaning.");
             return null;
@@ -97,7 +97,7 @@ public class HousekeepingController {
             return null;
         }
 
-        return updateRoomStatus(roomNumber, newStatus, supervisor);
+        return updateRoomStatus(roomNumber, newStatus, staffName);
     }
 
     public HousekeepingLog rollbackLastAction() {

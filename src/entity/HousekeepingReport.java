@@ -77,11 +77,11 @@ public class HousekeepingReport {
         return count;
     }
 
-    // Statistical breakdown by supervisor
-    public int getLogCountBySupervisor(String supervisor) {
+    // Statistical breakdown by staff member
+    public int getLogCountByStaff(String staffName) {
         int count = 0;
         for (int i = 0; i < logs.size(); i++) {
-            if (logs.get(i).getSupervisorName().equalsIgnoreCase(supervisor)) {
+            if (logs.get(i).getStaffName().equalsIgnoreCase(staffName)) {
                 count++;
             }
         }

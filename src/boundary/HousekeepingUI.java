@@ -87,14 +87,14 @@ public class HousekeepingUI {
     }
 
     private boolean login() {
-        System.out.println("\n=========================================");
+        System.out.println("\n=============================================================");
         System.out.println("HOUSEKEEPING SYSTEM LOGIN");
-        System.out.println("=========================================");
+        System.out.println("=============================================================");
 
         System.out.println("\nAvailable Users:");
         System.out.println(" Staff: staff1,staff2,staff3 (Password: staff123/456/789)");
         System.out.println(" Supervisors: supervisor1,supervisor2 (Password: sup123/456)");
-        System.out.println("=========================================");
+        System.out.println("=============================================================");
 
         int attempts = 0;
         while (attempts < 3) {
@@ -104,6 +104,7 @@ public class HousekeepingUI {
             String password = InputUtil.readString("");
 
             if (authController.login(username, password)) {
+                System.out.println("=============================================================");
                 System.out.println("\nLogin successful! Welcome, " + username + "!");
                 System.out.println("Role: " + authController.getCurrentUser().getRole().getDisplayName());
                 InputUtil.pressEnterToContinue();
@@ -142,6 +143,7 @@ public class HousekeepingUI {
             return;
         }
 
+        System.out.println("-".repeat(50));
         System.out.println("Current Status: " + room.getRoomStatus().getLabel());
         System.out.println("Available next statuses:");
 
@@ -155,6 +157,7 @@ public class HousekeepingUI {
             return;
         }
 
+        System.out.println("-".repeat(50));
         System.out.println("Select New Cleaning Status:");
         System.out.println("1. Dirty");
         System.out.println("2. Cleaning In Progress");
@@ -170,25 +173,28 @@ public class HousekeepingUI {
             RoomStatus.INSPECTED, RoomStatus.READY};
         RoomStatus newStatus = housekeepingChoices[statusChoice - 1];
 
-        String supervisor = InputUtil.readString("Enter Supervisor Name (or -1 to cancel): ");
-        if (supervisor.equals("-1")) {
+        String staffName = InputUtil.readString("Enter Your Name (or -1 to cancel): ");
+        if (staffName.equals("-1")) {
             System.out.println("Operation cancelled.");
             InputUtil.pressEnterToContinue();
             return;
         }
 
-        HousekeepingLog log = controller.updateRoomStatus(roomNum, newStatus, supervisor);
+        HousekeepingLog log = controller.updateRoomStatus(roomNum, newStatus, staffName);
+        System.out.println("-".repeat(50));
         if (log != null) {
-            System.out.println("\nSUCCESS: Housekeeping log registered! Room status updated.");
+            System.out.println("SUCCESS: Housekeeping log registered! Room status updated.");
             System.out.println(log);
         } else {
             System.out.println("ERROR: Failed to update room status.");
         }
+        System.out.println("-".repeat(50));
         InputUtil.pressEnterToContinue();
     }
 
     private void supervisorAction() {
         if (!authController.isSupervisor()) {
+            System.out.println("=====================================================");
             System.out.println("ERROR: This action is only available to supervisors.");
             InputUtil.pressEnterToContinue();
             return;
@@ -210,6 +216,7 @@ public class HousekeepingUI {
         }
 
         RoomStatus current = room.getRoomStatus();
+        System.out.println("-".repeat(50));
         System.out.println("Current Status: " + current.getLabel());
 
         if (current != RoomStatus.CLEANING_IN_PROGRESS) {
@@ -218,6 +225,7 @@ public class HousekeepingUI {
             return;
         }
 
+        System.out.println("-".repeat(50));
         System.out.println("Supervisor Actions:");
         System.out.println("1. Approve Cleaning → Inspected");
         System.out.println("2. Reject Cleaning → Dirty");
@@ -231,15 +239,17 @@ public class HousekeepingUI {
         RoomStatus newStatus = (action == 1)
                 ? RoomStatus.INSPECTED : RoomStatus.DIRTY;
 
-        String supervisor = InputUtil.readString("Enter Supervisor Name: ");
-        HousekeepingLog log = controller.approveCleaning(roomNum, newStatus, supervisor);
+        String staffName = InputUtil.readString("Enter Your Name: ");
+        HousekeepingLog log = controller.approveCleaning(roomNum, newStatus, staffName);
 
+        System.out.println("-".repeat(50));
         if (log != null) {
-            System.out.println("\nSUCCESS: " + (action == 1 ? "Approved" : "Rejected") + " cleaning!");
+            System.out.println("SUCCESS: " + (action == 1 ? "Approved" : "Rejected") + " cleaning!");
             System.out.println(log);
         } else {
             System.out.println("ERROR: Failed to process supervisor action.");
         }
+        System.out.println("-".repeat(50));
         InputUtil.pressEnterToContinue();
     }
 
@@ -252,8 +262,10 @@ public class HousekeepingUI {
         }
 
         HousekeepingLog lastLog = stack.peek();
+        System.out.println("-".repeat(50));
         System.out.println("You are about to roll back the following action:");
         System.out.println("  " + lastLog);
+        System.out.println("-".repeat(50));
         String confirm = InputUtil.readString("Are you sure you want to rollback this action? (Y/N): ");
         if (!confirm.equalsIgnoreCase("Y")) {
             System.out.println("Rollback cancelled.");
@@ -262,6 +274,7 @@ public class HousekeepingUI {
         }
 
         HousekeepingLog undone = controller.rollbackLastAction();
+        System.out.println("-".repeat(50));
         if (undone != null) {
             System.out.println("SUCCESS: Rolled back the last action!");
             System.out.printf("Undone Log: %s\n", undone);
@@ -269,6 +282,7 @@ public class HousekeepingUI {
         } else {
             System.out.println("ERROR: Rollback failed.");
         }
+        System.out.println("-".repeat(50));
         InputUtil.pressEnterToContinue();
     }
 
@@ -288,6 +302,7 @@ public class HousekeepingUI {
             return;
         }
 
+        System.out.println("-".repeat(50));
         String confirm = InputUtil.readString("Are you sure you want to rollback the last " + count + " actions? (Y/N): ");
         if (!confirm.equalsIgnoreCase("Y")) {
             System.out.println("Bulk rollback cancelled.");
@@ -296,10 +311,12 @@ public class HousekeepingUI {
         }
 
         ListInterface<HousekeepingLog> rolledBack = controller.rollbackMultipleActions(count);
-        System.out.printf("\nSUCCESS: Popped %d items. The following updates have been undone:\n", rolledBack.size());
+        System.out.println("-".repeat(50));
+        System.out.printf("SUCCESS: Popped %d items. The following updates have been undone:\n", rolledBack.size());
         for (int i = 0; i < rolledBack.size(); i++) {
             System.out.println("  - " + rolledBack.get(i));
         }
+        System.out.println("-".repeat(50));
         InputUtil.pressEnterToContinue();
     }
 
@@ -314,12 +331,12 @@ public class HousekeepingUI {
         ListInterface<HousekeepingLog> logs = stack.toList();
         System.out.println("----------------------------------------------------------------------------------------------------");
         System.out.printf("%-5s | %-10s | %-8s | %-15s | %-20s | %-20s\n",
-                "Depth", "Timestamp", "Room", "Supervisor", "Old Status", "New Status");
+                "Depth", "Timestamp", "Room", "Staff/Supervisor", "Old Status", "New Status");
         System.out.println("----------------------------------------------------------------------------------------------------");
         for (int i = 0; i < logs.size(); i++) {
             HousekeepingLog l = logs.get(i);
             System.out.printf("%-5d | %-10s | %-8d | %-15s | %-20s | %-20s\n",
-                    i + 1, l.getTimestamp(), l.getRoomNumber(), l.getSupervisorName(),
+                    i + 1, l.getTimestamp(), l.getRoomNumber(), l.getStaffName(),
                     l.getOldStatus().getLabel(), l.getNewStatus().getLabel());
         }
         System.out.println("----------------------------------------------------------------------------------------------------");
@@ -496,7 +513,7 @@ public class HousekeepingUI {
                 System.out.printf("%-10s | %-8d | %-15s | %-20s | %-20s\n",
                         log.getTimestamp(),
                         log.getRoomNumber(),
-                        log.getSupervisorName(),
+                        log.getStaffName(),
                         log.getOldStatus().getLabel(),
                         log.getNewStatus().getLabel());
             }

@@ -6,14 +6,14 @@ public class HousekeepingLog {
     private int roomNumber;
     private RoomStatus oldStatus;
     private RoomStatus newStatus;
-    private String supervisorName;
+    private String staffName;
     private String timestamp;
 
-    public HousekeepingLog(int roomNumber, RoomStatus oldStatus, RoomStatus newStatus, String supervisorName, String timestamp) {
+    public HousekeepingLog(int roomNumber, RoomStatus oldStatus, RoomStatus newStatus, String staffName, String timestamp) {
         this.roomNumber = roomNumber;
         this.oldStatus = oldStatus;
         this.newStatus = newStatus;
-        this.supervisorName = supervisorName;
+        this.staffName = staffName;
         this.timestamp = timestamp;
     }
 
@@ -41,12 +41,12 @@ public class HousekeepingLog {
         this.newStatus = newStatus;
     }
 
-    public String getSupervisorName() {
-        return supervisorName;
+    public String getStaffName() {
+        return staffName;
     }
 
-    public void setSupervisorName(String supervisorName) {
-        this.supervisorName = supervisorName;
+    public void setStaffName(String staffName) {
+        this.staffName = staffName;
     }
 
     public String getTimestamp() {
@@ -59,7 +59,7 @@ public class HousekeepingLog {
 
     @Override
     public String toString() {
-        return String.format("[%s] Supervisor %s updated Room %d from %s to %s",
-                timestamp, supervisorName, roomNumber, oldStatus.getLabel(), newStatus.getLabel());
+        return String.format("[%s] %s updated Room %d from %s to %s",
+                timestamp, staffName, roomNumber, oldStatus.getLabel(), newStatus.getLabel());
     }
 }

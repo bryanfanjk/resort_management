@@ -107,7 +107,7 @@ public class HousekeepingReportController {
             }
 
             // Filter by staff name (empty means all)
-            if (!staffFilter.isEmpty() && !log.getSupervisorName().equalsIgnoreCase(staffFilter)) {
+            if (!staffFilter.isEmpty() && !log.getStaffName().equalsIgnoreCase(staffFilter)) {
                 matches = false;
             }
 
