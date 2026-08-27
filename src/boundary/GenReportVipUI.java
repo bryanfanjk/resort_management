@@ -2,6 +2,7 @@ package boundary;
 
 import adt.List;
 import control.HotelController;
+import control.VipReportController;
 import entity.Room;
 import entity.RoomType;
 import entity.WaitingCustomer;
@@ -14,9 +15,11 @@ public class GenReportVipUI {
     private static final String TITLE_DIVIDER = divider('=', 100);
     private static final String ROW_DIVIDER = divider('-', 100);
     private final HotelController controller;
+    private final VipReportController vipCont;
 
     public GenReportVipUI(HotelController controller) {
         this.controller = controller;
+        this.vipCont = new VipReportController(controller);
     }
 
     /*
@@ -43,8 +46,8 @@ public class GenReportVipUI {
         int[] gap = new int[types.length];
 
         for (int i = 0; i < types.length; i++) {
-            demand[i] = countVipDemand(types[i]);
-            available[i] = countAvailableRooms(types[i]);
+            demand[i] = vipCont.countVipDemand(types[i]);
+            available[i] = vipCont.countAvailableRooms(types[i]);
             gap[i] = demand[i] - available[i];
         }
 
@@ -114,10 +117,8 @@ public class GenReportVipUI {
             String nameFilter,
             int sortChoice) {
 
-        List<WaitingCustomer> customers =
-                getFilteredVipCustomers(roomTypeFilter, nameFilter);
-
-        sortCustomers(customers, sortChoice);
+        List<WaitingCustomer> customers = vipCont.getFilteredVipCustomers(roomTypeFilter, nameFilter);
+        vipCont.sortVipCustomers(customers, sortChoice);
 
         System.out.println("\n" + TITLE_DIVIDER);
         System.out.println("VIP Customer Summary Report");
@@ -151,7 +152,7 @@ public class GenReportVipUI {
                 int quantity = 1;
                 for (int candidateIndex = index + 1;
                         candidateIndex < customers.size(); candidateIndex++) {
-                    if (sameRequirements(customer, customers.get(candidateIndex))) {
+                    if (vipCont.sameRequirements(customer, customers.get(candidateIndex))) {
                         quantity++;
                         displayedCustomers[candidateIndex] = true;
                     }
@@ -176,187 +177,7 @@ public class GenReportVipUI {
         }
     }
 
-    private boolean sameRequirements(WaitingCustomer first,
-                                     WaitingCustomer second) {
-        return first.getCustomerName().equalsIgnoreCase(second.getCustomerName())
-                && first.getPax() == second.getPax()
-                && first.getCheckInDate().equals(second.getCheckInDate())
-                && first.getNightsStayed() == second.getNightsStayed()
-                && first.getRequestedRoomType() == second.getRequestedRoomType();
-    }
 
-    private List<WaitingCustomer> getFilteredVipCustomers(
-            RoomType roomTypeFilter,
-            String nameFilter) {
-
-        adt.VipList<WaitingCustomer> vipCustomers =
-                controller.getVipWaitingCustomers();
-
-        List<WaitingCustomer> filteredCustomers =
-                new List<>(Math.max(1, vipCustomers.size()));
-
-        String normalizedName = nameFilter == null
-                ? ""
-                : nameFilter.trim().toLowerCase();
-
-        for (int index = 0;
-             index < vipCustomers.size();
-             index++) {
-
-            WaitingCustomer customer =
-                    vipCustomers.get(index);
-
-            boolean matchesRoomType =
-                    roomTypeFilter == null
-                    || customer.getRequestedRoomType()
-                    == roomTypeFilter;
-
-            boolean matchesName =
-                    normalizedName.isEmpty()
-                    || customer.getCustomerName()
-                    .toLowerCase()
-                    .contains(normalizedName);
-
-            if (matchesRoomType && matchesName) {
-                filteredCustomers.add(customer);
-            }
-        }
-
-        return filteredCustomers;
-    }
-
-    private void sortCustomers(
-            List<WaitingCustomer> customers,
-            int sortChoice) {
-
-        for (int start = 0;
-             start < customers.size() - 1;
-             start++) {
-
-            int selectedIndex = start;
-
-            for (int index = start + 1;
-                 index < customers.size();
-                 index++) {
-
-                if (compareCustomers(
-                        customers.get(index),
-                        customers.get(selectedIndex),
-                        sortChoice) < 0) {
-
-                    selectedIndex = index;
-                }
-            }
-
-            if (selectedIndex != start) {
-                WaitingCustomer selectedCustomer =
-                        customers.get(selectedIndex);
-
-                customers.set(
-                        selectedIndex,
-                        customers.get(start));
-
-                customers.set(
-                        start,
-                        selectedCustomer);
-            }
-        }
-    }
-
-    private int compareCustomers(
-            WaitingCustomer first,
-            WaitingCustomer second,
-            int sortChoice) {
-
-        switch (sortChoice) {
-            case 2:
-                return first.getCustomerName()
-                        .compareToIgnoreCase(
-                                second.getCustomerName());
-
-            case 3:
-                return Integer.compare(
-                        first.getPax(),
-                        second.getPax());
-
-            case 4:
-                return Integer.compare(
-                        first.getNightsStayed(),
-                        second.getNightsStayed());
-
-            default:
-                return Integer.compare(
-                        first.getWaitingPosition(),
-                        second.getWaitingPosition());
-        }
-    }
-
-    private int countVipDemand(RoomType roomType) {
-        int count = 0;
-
-        adt.VipList<WaitingCustomer> vipCustomers =
-                controller.getVipWaitingCustomers();
-
-        for (int index = 0;
-             index < vipCustomers.size();
-             index++) {
-
-            WaitingCustomer customer =
-                    vipCustomers.get(index);
-
-            if (customer.getRequestedRoomType()
-                    == roomType) {
-
-                count++;
-            }
-        }
-
-        return count;
-    }
-
-    private int countAvailableRooms(RoomType roomType) {
-        int count = 0;
-
-        for (Room room : controller.getRooms()) {
-            if (room.getRoomType() == roomType
-                    && room.isAvailable()) {
-
-                count++;
-            }
-        }
-
-        return count;
-    }
-
-    private String getRoomFilterLabel(
-            RoomType roomTypeFilter) {
-
-        return roomTypeFilter == null
-                ? "All Room Types"
-                : roomTypeFilter.getDisplayName();
-    }
-
-    private String getNameFilterLabel(
-            String nameFilter) {
-
-        return nameFilter == null
-                || nameFilter.trim().isEmpty()
-                ? "All Names"
-                : nameFilter.trim();
-    }
-
-    private String getSortLabel(int sortChoice) {
-        switch (sortChoice) {
-            case 2:
-                return "Customer Name";
-            case 3:
-                return "Number of Guests";
-            case 4:
-                return "Nights Stayed";
-            default:
-                return "Waiting Position";
-        }
-    }
     
     
         /*
@@ -417,7 +238,7 @@ public class GenReportVipUI {
         System.out.println("Room Type Filter: "
                 + getRoomFilterLabel(roomTypeFilter));
         System.out.println("Status Filter: "
-                + getReservationStatusLabel(checkedOutFilter));
+                + vipCont.getReservationStatusLabel(checkedOutFilter));
         System.out.println(
                 "Sort By: Check-in Date -> Room Capacity -> Nights Stayed");
         System.out.println(TITLE_DIVIDER);
@@ -464,17 +285,30 @@ public class GenReportVipUI {
         }
     }
     
-    private String getReservationStatusLabel(Boolean checkedOutFilter) {
-
-    if (checkedOutFilter == null) {
-        return "Active and Checked-out VIP Customers";
+        private String getRoomFilterLabel(RoomType roomTypeFilter) {
+        return roomTypeFilter == null
+                ? "All Room Types"
+                : roomTypeFilter.getDisplayName();
     }
 
-    if (checkedOutFilter) {
-        return "Checked-out VIP Customers Only";
+    private String getNameFilterLabel(String nameFilter) {
+        return nameFilter == null
+                || nameFilter.trim().isEmpty()
+                ? "All Names"
+                : nameFilter.trim();
     }
 
-    return "Active VIP Customers Only";
+    private String getSortLabel(int sortChoice) {
+        switch (sortChoice) {
+            case 2:
+                return "Customer Name";
+            case 3:
+                return "Number of Guests";
+            case 4:
+                return "Nights Stayed";
+            default:
+                return "Waiting Position";
+        }
     }
 
     private static String divider(char character, int length) {
