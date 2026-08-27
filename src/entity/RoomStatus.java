@@ -1,19 +1,5 @@
 package entity;
 
-/**
- * Combined room-state enum.
- * AVAILABLE / OCCUPIED / UNAVAILABLE describe occupancy (who is in the room
- * and whether it can be booked):
- *   - AVAILABLE   : vacant and ready to be booked (housekeeping = READY)
- *   - OCCUPIED    : a guest is currently staying in the room
- *   - UNAVAILABLE : vacant but not bookable yet (checked out, still going
- *                   through the housekeeping pipeline)
- * DIRTY / CLEANING_IN_PROGRESS / INSPECTED / READY describe the housekeeping
- * (cleaning) pipeline. The two groups are tracked independently on Room
- * (occupancyStatus vs roomStatus) but now share a single enum type/file.
- * Room.setRoomStatus(...) keeps occupancyStatus in sync with the
- * housekeeping pipeline automatically (see Room.java).
- */
 /* author: Ho Jia Ming */
 public enum RoomStatus {
     AVAILABLE("Available", 0),

@@ -48,17 +48,16 @@ public class HousekeepingUI {
             InputUtil.displayHeader("Housekeeping and Room Status Management");
             System.out.println("Current User: " + authController.getCurrentUser());
             System.out.println("1. Update Room Housekeeping Status");
-            System.out.println("2. Supervisor Action (Approve/Reject Cleaning)");
-            System.out.println("3. Rollback Last Status Log (Undo - LIFO Pop)");
-            System.out.println("4. Bulk Rollback Multiple Actions (ADT popMany)");
+            System.out.println("2. Supervisor Action");
+            System.out.println("3. Rollback Last Status Log");
+            System.out.println("4. Bulk Rollback Multiple Actions");
             System.out.println("5. View Current Housekeeping Rollback Stack");
             System.out.println("6. View Room Cleaning Status Registry");
             System.out.println("7. View Housekeeping Reports");
-            System.out.println("8. Process VIP Late Check-Out (Rollback Room to Occupied)");
+            System.out.println("8. Process VIP Late Check-Out");
             System.out.println("9. Logout");
-            System.out.println("10. Back to Main Menu");
 
-            int choice = InputUtil.readInt("Enter choice (1-10): ", 1, 10);
+            int choice = InputUtil.readInt("Enter choice (1-9): ", 1, 9);
             switch (choice) {
                 case 1:
                     updateStatus();
@@ -85,9 +84,6 @@ public class HousekeepingUI {
                     processVipLateCheckout();
                     break;
                 case 9:
-                    logout();
-                    return;
-                case 10:
                     logout();
                     return;
             }
@@ -211,6 +207,7 @@ public class HousekeepingUI {
 
         System.out.println("-".repeat(50));
         if (hotelController.requestLateCheckout(roomNum)) {
+            controller.purgeLogsForRoom(roomNum);
             System.out.println("SUCCESS: Room " + roomNum + " has been rolled back to Occupied.");
         }
         System.out.println("-".repeat(50));

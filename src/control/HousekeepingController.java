@@ -126,6 +126,20 @@ public class HousekeepingController {
         return poppedLogs;
     }
 
+    public void purgeLogsForRoom(int roomNumber) {
+        ListInterface<HousekeepingLog> keep = new adt.List<>(housekeepingStack.getSize());
+        while (!housekeepingStack.isEmpty()) {
+            HousekeepingLog log = housekeepingStack.pop();
+            if (log.getRoomNumber() != roomNumber) {
+                keep.add(log);
+            }
+        }
+
+        for (int i = keep.size() - 1; i >= 0; i--) {
+            housekeepingStack.push(keep.get(i));
+        }
+    }
+
     private Room findRoom(int roomNumber) {
         for (int i = 0; i < rooms.size(); i++) {
             Room r = rooms.get(i);
