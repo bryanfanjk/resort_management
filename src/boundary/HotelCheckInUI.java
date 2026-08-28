@@ -95,7 +95,7 @@ public class HotelCheckInUI {
         if (controller.checkOut(roomNumber, checkOutDate)) {
             System.out.println("\nRoom " + roomNumber + " is now Available.");
         } else {
-            System.out.println("Room does not exist or is already Available.");
+            System.out.println("Room does not exist or is Unavailable.");
         }
     }
 

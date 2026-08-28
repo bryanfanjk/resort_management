@@ -30,6 +30,7 @@ public class MainMenu {
         this.housekeepingController = new HousekeepingController(housekeepingStack,
                 roomsList,
                 authController);
+        dao.HousekeepingLogData.seedDemoData(roomsList, housekeepingStack);
         this.checkInUI = new HotelCheckInUI(hotelController);
         this.housekeepingUI = new HousekeepingUI(housekeepingController,
                 housekeepingStack,
