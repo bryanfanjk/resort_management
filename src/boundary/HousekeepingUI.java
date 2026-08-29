@@ -249,8 +249,8 @@ public class HousekeepingUI {
 
         System.out.println("-".repeat(50));
         System.out.println("Supervisor Actions:");
-        System.out.println("1. Approve Cleaning → Inspected");
-        System.out.println("2. Reject Cleaning → Dirty");
+        System.out.println("1. Approve Cleaning -> Inspected");
+        System.out.println("2. Reject Cleaning -> Dirty");
         int action = InputUtil.readIntWithExit("Enter choice (1-2, or -1 to cancel): ", 1, 2);
         if (action == -1) {
             System.out.println("Operation cancelled.");

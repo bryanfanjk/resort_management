@@ -41,7 +41,7 @@ public class HousekeepingController {
         // Check status transition rules
         if (!oldStatus.canTransitionTo(nextStatus)) {
             System.out.printf("ERROR: Cannot change from %s directly to %s. "
-                    + "Must follow sequence: Dirty → Cleaning → Inspected → Ready\n",
+                    + "Must follow sequence: Dirty -> Cleaning -> Inspected -> Ready\n",
                     oldStatus.getLabel(), nextStatus.getLabel());
             return null;
         }
@@ -61,14 +61,7 @@ public class HousekeepingController {
         }
 
         // Update room status
-        room.setRoomStatus(nextStatus);
-
-        String timestamp = new SimpleDateFormat("HH:mm:ss").format(new Date());
-        HousekeepingLog log = new HousekeepingLog(roomNumber, oldStatus, nextStatus,
-                staffName, timestamp);
-        housekeepingStack.push(log);
-
-        return log;
+        return recordStatusChange(room, oldStatus, nextStatus, staffName);
     }
 
     // For supervisor to approve/reject cleaning
@@ -81,6 +74,7 @@ public class HousekeepingController {
 
         Room room = findRoom(roomNumber);
         if (room == null) {
+            System.out.println("ERROR: Room number not found.");
             return null;
         }
 
@@ -97,7 +91,24 @@ public class HousekeepingController {
             return null;
         }
 
-        return updateRoomStatus(roomNumber, newStatus, staffName);
+        // Approve (-> Inspected) follows the normal forward sequence, but reject
+        // (-> Dirty) is a deliberate backward step that updateRoomStatus's
+        // forward-only sequence check would otherwise block. Both transitions are
+        // already fully validated above, so record the change directly instead of
+        // routing through updateRoomStatus.
+        return recordStatusChange(room, currentStatus, newStatus, staffName);
+    }
+
+    private HousekeepingLog recordStatusChange(Room room, RoomStatus oldStatus,
+            RoomStatus newStatus, String staffName) {
+        room.setRoomStatus(newStatus);
+
+        String timestamp = new SimpleDateFormat("HH:mm:ss").format(new Date());
+        HousekeepingLog log = new HousekeepingLog(room.getRoomNumber(), oldStatus, newStatus,
+                staffName, timestamp);
+        housekeepingStack.push(log);
+
+        return log;
     }
 
     public HousekeepingLog rollbackLastAction() {
